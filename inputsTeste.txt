@@ -1,0 +1,90 @@
+ <div class="container-form">
+        <MoleculeForm
+          text-label="qual o nome do responsável técnico?"
+          text-placeholder="Sua resposta"
+          :value-type-input="'text'"
+          :value-required-input="true"
+          name-input="technicalManager"
+        />
+        {{ values.technicalManager }}
+      </div>
+
+      <div class="container-form">
+        <MoleculeForm
+          text-label="código ID do projeto"
+          text-placeholder="Sua resposta"
+          :value-type-input="'number'"
+          :value-required-input="true"
+          name-input="idProject"
+        />
+        {{ values.idProject }}
+      </div>
+
+      <div class="container-form">
+        <MoleculeForm
+          text-label="nome do cliente"
+          text-placeholder="Sua resposta"
+          :value-type-input="'text'"
+          :value-required-input="true"
+          name-input="customerName"
+        />
+        {{ values.customerName }}
+      </div>
+
+      <div class="container-form">
+        <MoleculeForm
+          text-label="data de início da instalação"
+          text-placeholder="Sua resposta"
+          :value-type-input="'date'"
+          :value-required-input="true"
+          name-input="startDate"
+        />
+        {{ values.startDate }}
+      </div>
+
+      <div class="container-form">
+        <MoleculeForm
+          text-label="data de término da instalação"
+          text-placeholder="Sua resposta"
+          :value-type-input="'date'"
+          :value-required-input="true"
+          name-input="finalDate"
+        />
+        {{ values.finalDate }}
+      </div>
+
+      <!-- até 10fotos -->
+      <div class="container-form">
+        <MoleculeForm
+          text-label="foto da estrutura de fixação antes da instalação dos painéis"
+          text-placeholder="fotos"
+          :value-type-input="'file'"
+          :value-required-input="true"
+          name-input="structurePhotoBeforeInstallation"
+        />
+        {{ values.structurePhotoBeforeInstallation?.length }}
+      </div>
+
+      <!-- até 10fotos -->
+      <div class="container-form">
+        <MoleculeForm
+          text-label="foto do aterramento dos módulos"
+          text-placeholder="fotos"
+          :value-type-input="'file'"
+          :value-required-input="true"
+          name-input="photoOfGroundingModules"
+        />
+        {{ values.photoOfGroundingModules }}
+      </div>
+
+      <!-- até 10fotos -->
+      <div class="container-form">
+        <MoleculeForm
+          text-label="foto geral de todos os painéis instalados"
+          text-placeholder="fotos"
+          :value-type-input="'file'"
+          :value-required-input="true"
+          name-input="photoAllPanelsInstalled"
+        />
+        {{ values.photoAllPanelsInstalled }}
+      </div>
