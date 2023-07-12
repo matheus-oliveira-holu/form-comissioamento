@@ -11,12 +11,19 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "@mdi/font": "^7.2.96",
     "axios": "^1.4.0",
     "file-saver": "^2.0.5",
     "firebase": "^9.22.2",
     "firebase-admin": "^11.9.0",
+    "google-auth-library": "^8.8.0",
     "googleapis": "^118.0.0",
+    "v-mask": "^2.3.0",
     "vee-validate": "^4.9.6",
+    "vue-currency-input": "^3.0.5",
+    "vue-inputmask": "^0.2.1",
+    "vue-the-mask": "^0.11.1",
+    "vuetify": "^3.3.6",
     "xlsx": "^0.18.5",
     "yup": "^1.2.0"
   },

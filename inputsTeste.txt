@@ -1,90 +1,161 @@
- <div class="container-form">
-        <MoleculeForm
-          text-label="qual o nome do responsável técnico?"
-          text-placeholder="Sua resposta"
-          :value-type-input="'text'"
-          :value-required-input="true"
-          name-input="technicalManager"
-        />
-        {{ values.technicalManager }}
+
+      {name: 'fotoConexoesEletricas', question: 'Foto detalhada das conexões elétricas da(s) caixa(s) de proteção CA', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: 'Foto do ponto de conexão do inversor com a rede', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: 'Foto do ponto de fixação do aterramento do sistema', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: 'Fotos para inspeção visual do telhado após a obra (condições das telhas, calhas e limpeza do local)', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: 'Fotos da tensão(s) CA medida(s) entre fase e neutro', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: 'Foto da(s) tensão(ões) CA medida(s) entre fase e fase', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: 'Foto da etiqueta de um dos módulos', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: 'Em caso de projetos com bloqueador (desligamento remoto), envie uma foto', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: 'Em caso de projetos com bloqueador (desligamento remoto), envie uma foto do SN (ID)', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: 'Foto do padrão de entrada completo com placa(s) de sinalização', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: 'Foto do disjuntor do padrão de entrada adequado e DPS instalado', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: 'Qual tipo de inversor instalado?', typeOfResponse: 'lista', isRequired: true},
+      // SE INVERSOR INSTRING
+      {name: '', question: 'Quantos inversores foram instalados?', typeOfResponse: 'number', isRequired: true},
+      {name: '', question: 'Qual o primeiro (ou único) inversor string utilizado?', typeOfResponse: 'lista', isRequired: true},
+      {name: '', question: '', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: '', typeOfResponse: 'file', isRequired: true},
+      {name: '', question: '', typeOfResponse: 'file', isRequired: true},
+
+
+"BYD-S 3KW MONOFÁSICO 220V
+BYD-K 3KW MONOFÁSICO 220V
+BYD-S 5KW MONOFÁSICO 220V
+BYD-K 6KW MONOFÁSICO 220V
+BYD-S 8KW MONOFÁSICO 220V
+BYD-K 8KW MONOFÁSICO 220V
+BYD-K 9KW MONOFÁSICO 220V
+BYD-S 10KW MONOFÁSICO 220V
+ELSYS 3KW ESM3000 MONO
+ELSYS 3KW ESM3000L MONO
+ELSYS 5KW ESM5000 MONO
+ELSYS 6,5KW ESM6500 MONO
+ELSYS 8KW ESM8000 MONO
+GROWATT MIC 3000TL-X
+GROWATT MIN 3000TL-X
+GROWATT MIN 5000TL-X
+GROWATT MIN 6000TL-X
+GROWATT 8000MTL-S
+GOODWE 3KW - GW3000-NS
+GOODWE 5KW - GW5000D-NS
+GOODWE 8.5KW - GW8500-MS
+GOODWE 10KW - GW10K-MS
+SOLIS MONO 3K S6
+SOLIS MONO 3K 1P
+SOLIS MONO 4K 1P
+SOLIS MONO 5K 1P
+SOLIS MONO 6K 1P
+SOLIS S5-GR1P 7K
+SOLIS S5-GR1P 8K
+SOLIS S5-GR1P 9K
+SOLIS S5-GR1P 10K
+SOLIS 15K-LV
+SOLIS 20K-LV
+SUNGROW SG3K RS MONO
+SUNGROW SG4K RS MONO
+SUNGROW SG5K RS MONO
+SUNGROW SG6K RS MONO
+SUNGROW SG8.3K-D MONO
+SUNGROW SG RS 8K
+SUNGROW SG RS 9K
+SUNGROW SG RS 10K"
+
+      <!-- 3 RAMIFICAÇÃO STRING-->
+      <div 
+        v-else-if="
+          data.name === 'inverterStringUsed'
+          && value.quantityInvertersInstalled > 0
+          && value.inverterTypeInstalled === 'inverter String'
+        "
+        v-for="index in Number(value.quantityInvertersInstalled)"
+        :key="index"
+      >
+        <div
+          class="container-molecule-form"
+          v-if="value.inverterTypeInstalled === 'inverter String' && value.quantityInvertersInstalled > 0"
+        >
+          <labelVue :text="data.question" :name-input="data.name"/>
+          <!-- SELECT INVERSOR STRING UTILIZADO -->
+          <SelectVue 
+            aria-placeholder="Selecionar..."
+            :name-select="String(data.name+index)"
+            :required-input="data.isRequired"
+          >
+            <optgroup label="BYD">
+              <option value="BYD-S 3KW MONOFÁSICO 220V">BYD-S 3KW MONOFÁSICO 220V</option>
+              <option value="BYD-K 3KW MONOFÁSICO 220V">BYD-K 3KW MONOFÁSICO 220V</option>
+              <option value="BYD-S 5KW MONOFÁSICO 220V">BYD-S 5KW MONOFÁSICO 220V</option>
+              <option value="BYD-K 6KW MONOFÁSICO 220V">BYD-K 6KW MONOFÁSICO 220V</option>
+              <option value="BYD-S 8KW MONOFÁSICO 220V">BYD-S 8KW MONOFÁSICO 220V</option>
+              <option value="BYD-K 8KW MONOFÁSICO 220V">BYD-K 8KW MONOFÁSICO 220V</option>
+              <option value="BYD-K 9KW MONOFÁSICO 220V">BYD-K 9KW MONOFÁSICO 220V</option>
+              <option value="BYD-S 10KW MONOFÁSICO 220V">BYD-S 10KW MONOFÁSICO 220V</option>
+            </optgroup>
+            <optgroup label="ELSYS">
+              <option value="ELSYS 3KW ESM3000 MONO">ELSYS 3KW ESM3000 MONO</option>
+              <option value="ELSYS 3KW ESM3000L MONO">ELSYS 3KW ESM3000L MONO</option>
+              <option value="ELSYS 5KW ESM5000 MONO">ELSYS 5KW ESM5000 MONO</option>
+              <option value="ELSYS 6,5KW ESM6500 MONO">ELSYS 6,5KW ESM6500 MONO</option>
+              <option value="ELSYS 8KW ESM8000 MONO">ELSYS 8KW ESM8000 MONO</option>
+            </optgroup>
+            <optgroup label="GROWATT">
+              <option value="GROWATT MIC 3000TL-X">GROWATT MIC 3000TL-X</option>
+              <option value="GROWATT MIN 3000TL-X">GROWATT MIN 3000TL-X</option>
+              <option value="GROWATT MIN 5000TL-X">GROWATT MIN 5000TL-X</option>
+              <option value="GROWATT MIN 6000TL-X">GROWATT MIN 6000TL-X</option>
+              <option value="GROWATT 8000MTL-S">GROWATT 8000MTL-S</option>
+            </optgroup>
+            <optgroup label="GOODWE">
+              <option value="GOODWE 3KW - GW3000-NS">GOODWE 3KW - GW3000-NS</option>
+              <option value="GOODWE 5KW - GW5000D-NS">GOODWE 5KW - GW5000D-NS</option>
+              <option value="GOODWE 8.5KW - GW8500-MS">GOODWE 8.5KW - GW8500-MS</option>
+              <option value="GOODWE 10KW - GW10K-MS">GOODWE 10KW - GW10K-MS</option>
+            </optgroup>
+            <optgroup label="SOLIS">
+              <option value="SOLIS MONO 3K S6">SOLIS MONO 3K S6</option>
+              <option value="SOLIS MONO 3K 1P">SOLIS MONO 3K 1P</option>
+              <option value="SOLIS MONO 4K 1P">SOLIS MONO 4K 1P</option>
+              <option value="SOLIS MONO 5K 1P">SOLIS MONO 5K 1P</option>
+              <option value="SOLIS MONO 6K 1P">SOLIS MONO 6K 1P</option>
+              <option value="SOLIS S5-GR1P 7K">SOLIS S5-GR1P 7K</option>
+              <option value="SOLIS S5-GR1P 8K">SOLIS S5-GR1P 8K</option>
+              <option value="SOLIS S5-GR1P 9K">SOLIS S5-GR1P 9K</option>
+              <option value="SOLIS S5-GR1P 10K">SOLIS S5-GR1P 10K</option>
+              <option value="SOLIS 15K-LV">SOLIS 15K-LV</option>
+              <option value="SOLIS 20K-LV">SOLIS 20K-LV</option>
+            </optgroup>
+            <optgroup label="SUNGROW">
+              <option value="SUNGROW SG3K RS MONO">SUNGROW SG3K RS MONO</option>
+              <option value="SUNGROW SG4K RS MONO">SUNGROW SG4K RS MONO</option>
+              <option value="SUNGROW SG5K RS MONO">SUNGROW SG5K RS MONO</option>
+              <option value="SUNGROW SG6K RS MONO">SUNGROW SG6K RS MONO</option>
+              <option value="SUNGROW SG8.3K-D MONO">SUNGROW SG8.3K-D MONO</option>
+              <option value="SUNGROW SG RS 8K">SUNGROW SG RS 8K</option>
+              <option value="SUNGROW SG RS 9K">SUNGROW SG RS 9K</option>
+              <option value="SUNGROW SG RS 10K">SUNGROW SG RS 10K</option>
+            </optgroup>
+          </SelectVue>
+        </div>
       </div>
 
-      <div class="container-form">
-        <MoleculeForm
-          text-label="código ID do projeto"
-          text-placeholder="Sua resposta"
-          :value-type-input="'number'"
-          :value-required-input="true"
-          name-input="idProject"
-        />
-        {{ values.idProject }}
-      </div>
+      <!-- SELECT REAMIFICAÇÃO MICRO -->
+       <SelectVue v-if="data.name === 'microInverterInstalled'"  name-select="microInverterInstalled" :required-input="data.isRequired">
+          <option value="default" disabled selected>Selecionar...</option>
+          <option value="APSYSTEMS DS3D 2000W">APSYSTEMS DS3D 2000W</option>
+          <option value="Enphase IQ7AM">Enphase IQ7AM</option>
+          <option value="Hoymiles - 1500 - 2MPPTS">Hoymiles - 1500 - 2MPPTS</option>
+          <option value="Hoymiles 2000 - HMS-2000B-4T - 2MPPTS">Hoymiles 2000 - HMS-2000B-4T - 2MPPTS</option>
+          <option value="Hoymiles 2000 - HMS-2000-4T - 4MPPTS">Hoymiles 2000 - HMS-2000-4T - 4MPPTS</option>
+        </SelectVue>
 
-      <div class="container-form">
-        <MoleculeForm
-          text-label="nome do cliente"
-          text-placeholder="Sua resposta"
-          :value-type-input="'text'"
-          :value-required-input="true"
-          name-input="customerName"
-        />
-        {{ values.customerName }}
-      </div>
 
-      <div class="container-form">
-        <MoleculeForm
-          text-label="data de início da instalação"
-          text-placeholder="Sua resposta"
-          :value-type-input="'date'"
-          :value-required-input="true"
-          name-input="startDate"
-        />
-        {{ values.startDate }}
-      </div>
-
-      <div class="container-form">
-        <MoleculeForm
-          text-label="data de término da instalação"
-          text-placeholder="Sua resposta"
-          :value-type-input="'date'"
-          :value-required-input="true"
-          name-input="finalDate"
-        />
-        {{ values.finalDate }}
-      </div>
-
-      <!-- até 10fotos -->
-      <div class="container-form">
-        <MoleculeForm
-          text-label="foto da estrutura de fixação antes da instalação dos painéis"
-          text-placeholder="fotos"
-          :value-type-input="'file'"
-          :value-required-input="true"
-          name-input="structurePhotoBeforeInstallation"
-        />
-        {{ values.structurePhotoBeforeInstallation?.length }}
-      </div>
-
-      <!-- até 10fotos -->
-      <div class="container-form">
-        <MoleculeForm
-          text-label="foto do aterramento dos módulos"
-          text-placeholder="fotos"
-          :value-type-input="'file'"
-          :value-required-input="true"
-          name-input="photoOfGroundingModules"
-        />
-        {{ values.photoOfGroundingModules }}
-      </div>
-
-      <!-- até 10fotos -->
-      <div class="container-form">
-        <MoleculeForm
-          text-label="foto geral de todos os painéis instalados"
-          text-placeholder="fotos"
-          :value-type-input="'file'"
-          :value-required-input="true"
-          name-input="photoAllPanelsInstalled"
-        />
-        {{ values.photoAllPanelsInstalled }}
-      </div>
+        
+          <SelectVue 
+            v-if="
+              data.name === 'microInverterInstalled'"  
+              name-select="microInverterInstalled" 
+              :required-input="data.isRequired
+            "
+            :items="['APSYSTEMS DS3D 2000W','Enphase IQ7AM','Hoymiles - 1500 - 2MPPTS','Hoymiles 2000 - HMS-2000B-4T - 2MPPTS', 'Hoymiles 2000 - HMS-2000-4T - 4MPPTS']"
+          /> 

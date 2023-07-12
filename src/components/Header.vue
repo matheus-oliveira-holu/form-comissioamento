@@ -1,29 +1,52 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
-import { reactive, watch } from 'vue';
+import logo from '../assets/logo.svg'
 
-const state = reactive({
-    currentNumber: 1,
-    currentNumberMultForTwo: 1,
-})
-
-function count(){
-    state.currentNumber++;
-}
-watch(() => state.currentNumber,(newValue: number, oldValue: number) => {
-    console.log("Old "+oldValue);
-    console.log("New "+newValue);
-    
-})
 
 </script>
 
 <template>
-    <div>
-        <p>contagem: {{ state.currentNumber }}</p>
-        <p>Multiplicado por 2:  {{ state.currentNumberMultForTwo }}</p>
-        <button @click="count">Acrescentar</button>
-    </div>
+    <v-app-bar
+        color="#1F4997"
+        absolute
+        height="88"
+        flat
+        class="app-bar"
+    >
+        <div class="responsive-header d-flex align-center flex-grow-1" >
+            <v-icon style="width: 7rem; height: 2rem; ">
+                <img :src="logo" alt="">
+            </v-icon>
+            <v-app-bar-title class="responsive-text text-sm-right">
+                <p style="color: #fff;">Formulário de Comissionamento</p>
+            </v-app-bar-title>
+        </div>
+    </v-app-bar>
 </template>
 
-<style></style>
+<style>
+    .responsive-header{
+        padding: 9.5rem;
+    }
+    @media screen and (max-width:920px) {
+        .app-bar{
+            height: 6.5rem;
+            padding: 1rem 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .responsive-header{
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+            padding: 0rem;
+        }
+        .responsive-text{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+</style>

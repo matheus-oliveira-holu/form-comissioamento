@@ -1,22 +1,13 @@
 <script setup lang="ts">
+import Header from './components/Header.vue';
 import Form from './components/organisms/Form.vue';
 
 </script>
 
 <template>
-
-  <div class="container">
+  <v-app class="bg-blue-grey-lighten-5">
+    <Header/>
     <Form />
-  </div>
-  
+  </v-app>
 </template>
 
-<style scoped>
-  .container{
-    width: 45%;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-</style>

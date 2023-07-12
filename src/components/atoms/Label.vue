@@ -10,7 +10,7 @@ const props = defineProps<PropsLabel>()
 </script>
 
 <template>
-  <label class="label-styled">{{ props.text }}</label>
+  <label class="label-styled">{{ props.text}}</label>
 </template>
 
 <style>
