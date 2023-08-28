@@ -21,9 +21,10 @@ const props = defineProps<PropsLabel>()
     color: #333;
     letter-spacing: 0.05em;
 
-    &::first-letter{
-      text-transform: capitalize;
-    }
+  }
+
+  .label-styled::first-letter{
+    text-transform: capitalize;
   }
   
 </style>

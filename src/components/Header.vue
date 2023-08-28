@@ -15,7 +15,7 @@ import logo from '../assets/logo.svg'
     >
         <div class="responsive-header d-flex align-center flex-grow-1" >
             <v-icon style="width: 7rem; height: 2rem; ">
-                <img :src="logo" alt="">
+                <img :src="logo" alt="logo da holu">
             </v-icon>
             <v-app-bar-title class="responsive-text text-sm-right">
                 <p style="color: #fff;">Formulário de Comissionamento</p>

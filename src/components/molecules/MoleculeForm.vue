@@ -6,12 +6,10 @@
   import  SelectVue from '../atoms/Select.vue';
   import {ref as refVue, computed, watch, reactive, onMounted} from 'vue'
   import InputFile from '../atoms/InputFile.vue';
-  import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-  import { storage, app, auth } from '@/firebase';
-
+  import imageMap from '@/image';
   
   type dataFormProps = {
-    id?: number,
+    id?: any,
     name: string,
     question: string,
     typeOfResponse: string,
@@ -31,8 +29,7 @@
     }[]
   }
 
-  const emit = defineEmits(['section-updated'])
-
+  const emit = defineEmits(['section-updated', 'send-form'])
   
   const dataArray: dataFormProps[] = [
     /* Indentificação */
@@ -57,72 +54,73 @@
     { id:18, name: 'photoIfProjectsWithBlocker', question: 'Em caso de projetos com bloqueador (desligamento remoto), envie uma foto', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
     { id:19, name: 'photoSNIfProjectsWithBlocker', question: 'Em caso de projetos com bloqueador (desligamento remoto), envie uma foto do SN (ID)', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
     { id:20, name: 'photoInputPattern', question: 'Foto do padrão de entrada completo com placa(s) de sinalização', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:21, name: 'photoCircuitBreaker', question: 'Foto do disjuntor do padrão de entrada adequado e DPS instalado', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
+    { id:21, name: 'photoBannerOfTheResidence', question: 'Foto da fachada da residência com número.', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
+    { id:22, name: 'photoCircuitBreaker', question: 'Foto do disjuntor do padrão de entrada adequado e DPS instalado', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
     /* ponto de descisão */
-    {id:22, name: 'inverterTypeInstalled', question: 'Qual tipo de inversor instalado?', typeOfResponse: 'lista', isRequired: true, section: 'Micro e String'},
+    {id:23, name: 'inverterTypeInstalled', question: 'Qual tipo de inversor instalado?', typeOfResponse: 'lista', isRequired: true, section: 'Micro e String'},
     /* string  */
-    {id:23, name: 'quantityInvertersInstalled', question: 'Quantos inversores foram instalados?', typeOfResponse: 'number', isRequired: true, section:'String'},
-    {id:24, name: 'photoSNInverterString', question: 'Foto SN do inversor', typeOfResponse: 'file', isRequired: true, section:'String'},
-    {id:25, name: 'photoSNAntennaInverterString', question: 'Foto SN da antena do inversor', typeOfResponse: 'file', isRequired: true, section:'String'},
-    {id:26, name: 'photoDetailedConnectionEletric', question: 'Foto detalhada das conexões elétricas da(s) stringbox CC', typeOfResponse: 'file', isRequired: true,  section:'String'},
-    {id:27, name: 'photoInstallationOfInvertersCCAndCA', question: 'Foto ampla do local de instalação do(s) inversor(es), stringbox CC e caixa(s) de proteção CA', typeOfResponse: 'file', isRequired: true,  section:'String'},
-    {id:28, name: 'locationInverterInstalled', question: 'Qual o local em que o inversor foi instalado?', typeOfResponse: 'text', isRequired: true,  section:'String'},
-    {id:29, name: 'heightBetweenInverterDisplayAndFloor', question: 'Qual a altura entre o visor do inversor e piso acabado?', typeOfResponse: 'number', isRequired: true, section:'String'},
+    {id:24, name: 'quantityInvertersInstalled', question: 'Quantos inversores foram instalados?', typeOfResponse: 'number', isRequired: true, section:'String'},
+    {id:25, name: 'photoSNInverterString', question: 'Foto SN do inversor', typeOfResponse: 'file', isRequired: true, section:'String'},
+    {id:26, name: 'photoSNAntennaInverterString', question: 'Foto SN da antena do inversor', typeOfResponse: 'file', isRequired: true, section:'String'},
+    {id:27, name: 'photoDetailedConnectionEletric', question: 'Foto detalhada das conexões elétricas da(s) stringbox CC', typeOfResponse: 'file', isRequired: true,  section:'String'},
+    {id:28, name: 'photoInstallationOfInvertersCCAndCA', question: 'Foto ampla do local de instalação do(s) inversor(es), stringbox CC e caixa(s) de proteção CA', typeOfResponse: 'file', isRequired: true,  section:'String'},
+    {id:29, name: 'locationInverterInstalled', question: 'Qual o local em que o inversor foi instalado?', typeOfResponse: 'text', isRequired: true,  section:'String'},
+    {id:30, name: 'heightBetweenInverterDisplayAndFloor', question: 'Qual a altura entre o visor do inversor e piso acabado?', typeOfResponse: 'number', isRequired: true, section:'String'},
     /*  string - lógica MPPT */
-    {id:30, name: 'inverterStringUsed', question: 'Qual o "n" inversor string utilizado?', typeOfResponse: 'lista', isRequired: true,  section:'Entradas MPPT'},
-    {id:31, name: 'qtdPanelsConnectedSingleInputOfTheSingle', question: 'Quantos painéis foram conectados a entrada única do único MPPT deste inversor?', typeOfResponse: 'number', isRequired: true,  section:'Entradas MPPT' },
-    {id:32, name: 'photoVoltInverterInput', question: 'Envie uma foto da tensão dessa entrada do inversor', typeOfResponse: 'file', isRequired: true,  section:'Entradas MPPT'},
-    {id:33, name: 'photoChainInverterInput', question: 'Envie uma foto da corrente dessa entrada do inversor', typeOfResponse: 'file', isRequired: true,  section:'Entradas MPPT'  },
+    {id:31, name: 'inverterStringUsed',question: 'Qual o "n" inversor string utilizado?', typeOfResponse: 'lista', isRequired: true,  section:'Entradas MPPT'},
+    {id:32, name: 'qtdPanelsConnectedSingleInputOfTheSingle', question: 'Quantos painéis foram conectados a entrada única do único MPPT deste inversor?',typeOfResponse: 'number', isRequired: true,  section:'Entradas MPPT',},
+    {id:33, name: 'photoVoltInverterInput', question: 'Envie uma foto da tensão dessa entrada do inversor', typeOfResponse: 'file', isRequired: true,  section:'Entradas MPPT'},
+    {id:34, name: 'photoChainInverterInput', question: 'Envie uma foto da corrente dessa entrada do inversor', typeOfResponse: 'file', isRequired: true,  section:'Entradas MPPT'  },
 
     /* micro */
-    {id: 34, name: 'microInverterInstalled', question: 'Qual micro inversor foi instalado?', typeOfResponse: 'lista', isRequired: true, section: 'Micro'},
-    {id:35, name: 'quantityMicroInvertersInstalled', question: 'Quantos micros foram instalados?', typeOfResponse: 'number', isRequired: true, section:'Micro'},
-    {id:36, name: 'howManyInvertersNotCompletelyFull', question: 'Quantos desses micros NÃO estão completamente cheios?', typeOfResponse: 'number', isRequired: true, section:'Micro'},
-    {id:37, name: 'sketchModulesOnTheRoof', question: 'Envie o croqui dos módulos no telhado separados por micro inversor.', typeOfResponse: 'file', isRequired: true, section:'Micro'},
-    {id:38, name: 'photoSNOfAllMicroInverters', question: 'Foto SN de TODOS os micro inversores', typeOfResponse: 'file', isRequired: true, section:'Micro' },
-    {id:39, name: 'photoSNOfAntennaMicroInverters', question: 'Foto SN da antena dos micros inversores', typeOfResponse: 'file', isRequired: true,section:'Micro'},
+    {id: 35, name: 'microInverterInstalled', question: 'Qual micro inversor foi instalado?', typeOfResponse: 'lista', isRequired: true, section: 'Micro'},
+    {id:36, name: 'quantityMicroInvertersInstalled', question: 'Quantos micros foram instalados?', typeOfResponse: 'number', isRequired: true, section:'Micro'},
+    {id:37, name: 'howManyInvertersNotCompletelyFull', question: 'Quantos desses micros NÃO estão completamente cheios?', typeOfResponse: 'number', isRequired: true, section:'Micro'},
+    {id:38, name: 'sketchModulesOnTheRoof', question: 'Envie o croqui dos módulos no telhado separados por micro inversor.', typeOfResponse: 'file', isRequired: true, section:'Micro'},
+    {id:39, name: 'photoSNOfAllMicroInverters', question: 'Foto SN de TODOS os micro inversores', typeOfResponse: 'file', isRequired: true, section:'Micro' },
+    {id:40, name: 'photoSNOfAntennaMicroInverters', question: 'Foto SN da antena dos micros inversores', typeOfResponse: 'file', isRequired: true,section:'Micro'},
     
     /* conexão */
-    {id:40, name: 'thePanelsGroundedTogether', question: 'Os painéis foram aterrados entre si e conectados ao aterramento conforme a Normativa?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:41, name: 'allRightCrimpagesConnectorsMC4', question: 'As crimpagens dos conectores MC4 foram realizadas com o alicate correto e suas conexões foram devidamente conferidas?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:42, name: 'doubleIsulationCablesWereUsed', question: 'Foram utilizados cabos de dupla isolação (solar), enviados no kit, para realizar as ligações das partes de corrente contínua (CC) do sistema?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:43, name: 'typeOfPipingUsedAtInstall', question: 'Qual tipo de tubulação utilizado na instalação elétrica do sistema?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:44, name: 'stringBInvertersAndQBInstallInCoveredPlace', question: 'As Stringbox, inversores e o quadro de distribuição foram instaladas em local coberto, livre de intempéries como incidência de sol e chuva?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:45, name: 'whyNotStringBInvertersAndQBInstallInCoveredPlace', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
-    {id:46, name: 'installAccordingSinglelineDiagram', question: 'A instalação foi executada conforme diagrama unifilar elaborado?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:47, name: 'whyNotInstallAccordingSinglelineDiagram', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
-    {id:48, name: 'singlelineProjectDiagram', question: 'Envie o diagrama unifilar do projeto.', typeOfResponse: 'file', isRequired: true, section: 'Conexoes'},
-    {id:49, name: 'respectedMinimunSoacingInverters', question: 'Foi respeitado o espaçamento livre mínimo dos inversores, conforme orientado no Manual de Instalação?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:50, name: 'whyNotRespectedMinimunSoacingInverters', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
-    {id:51, name: 'allStringChecked', question: 'No ensaio de polaridade, todas as strings foram verificadas?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:52, name: 'whyNotAllStringChecked', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
-    {id:53, name: 'heldInspectionLocationAfterInstall', question: 'Foi realizada inspeção no local após a instalação?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
+    {id:41, name: 'thePanelsGroundedTogether', question: 'Os painéis foram aterrados entre si e conectados ao aterramento conforme a Normativa?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
+    {id:42, name: 'allRightCrimpagesConnectorsMC4', question: 'As crimpagens dos conectores MC4 foram realizadas com o alicate correto e suas conexões foram devidamente conferidas?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
+    {id:43, name: 'doubleIsulationCablesWereUsed', question: 'Foram utilizados cabos de dupla isolação (solar), enviados no kit, para realizar as ligações das partes de corrente contínua (CC) do sistema?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
+    {id:44, name: 'typeOfPipingUsedAtInstall', question: 'Qual tipo de tubulação utilizado na instalação elétrica do sistema?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
+    {id:45, name: 'stringBInvertersAndQBInstallInCoveredPlace', question: 'As Stringbox, inversores e o quadro de distribuição foram instaladas em local coberto, livre de intempéries como incidência de sol e chuva?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
+    {id:46, name: 'whyNotStringBInvertersAndQBInstallInCoveredPlace', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
+    {id:47, name: 'installAccordingSinglelineDiagram', question: 'A instalação foi executada conforme diagrama unifilar elaborado?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
+    {id:48, name: 'whyNotInstallAccordingSinglelineDiagram', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
+    {id:49, name: 'singlelineProjectDiagram', question: 'Envie o diagrama unifilar do projeto.', typeOfResponse: 'file', isRequired: true, section: 'Conexoes'},
+    {id:50, name: 'respectedMinimunSoacingInverters', question: 'Foi respeitado o espaçamento livre mínimo dos inversores, conforme orientado no Manual de Instalação?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
+    {id:51, name: 'whyNotRespectedMinimunSoacingInverters', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
+    {id:52, name: 'allStringChecked', question: 'No ensaio de polaridade, todas as strings foram verificadas?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
+    {id:53, name: 'whyNotAllStringChecked', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
+    {id:54, name: 'heldInspectionLocationAfterInstall', question: 'Foi realizada inspeção no local após a instalação?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
     /* Segurança */
-    {id:54, name: 'allEPIsAndEPCsWereUsed', question: 'Foram utilizados todos os EPIs e EPCs necessários durante a instalação?', typeOfResponse: 'lista', isRequired: true, section: 'Seguranca'},
-    {id:55, name: 'photoUseEPIsAndEPCsNecessary', question: 'Envie uma foto ou vídeo demonstrando a utilização de EPIs e EPCs necessários durante a instalação', typeOfResponse: 'file', isRequired: true, section: 'Seguranca'},
+    {id:55, name: 'allEPIsAndEPCsWereUsed', question: 'Foram utilizados todos os EPIs e EPCs necessários durante a instalação?', typeOfResponse: 'lista', isRequired: true, section: 'Seguranca'},
+    {id:56, name: 'photoUseEPIsAndEPCsNecessary', question: 'Envie uma foto ou vídeo demonstrando a utilização de EPIs e EPCs necessários durante a instalação', typeOfResponse: 'file', isRequired: true, section: 'Seguranca'},
     /* Monitoramento */
-    {id:56, name: 'monitoringConnectedToHOLUAccount', question: 'O monitoramento foi realizado e está conectado a conta da Holu?', typeOfResponse: 'lista', isRequired: true, section: 'Monitoramento'},
-    {id:57, name: 'whyNotMonitoringConnectedToHOLUAccount', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Monitoramento'},
-    {id:58, name: 'monitoringLogin', question: 'Qual login do monitoramento do cliente?', typeOfResponse: 'text', isRequired: true, section: 'Monitoramento'},
-    {id:59, name: 'monitoringPassword', question: 'Qual senha do monitoramento do cliente?', typeOfResponse: 'text', isRequired: true, section: 'Monitoramento'},
-    {id:60, name: 'photoAppmonitoringCustomer', question: 'Foto do aplicativo de monitoramento do cliente', typeOfResponse: 'file', isRequired: true, section: 'Monitoramento'},
+    {id:57, name: 'monitoringConnectedToHOLUAccount', question: 'O monitoramento foi realizado e está conectado a conta da Holu?', typeOfResponse: 'lista', isRequired: true, section: 'Monitoramento'},
+    {id:58, name: 'whyNotMonitoringConnectedToHOLUAccount', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Monitoramento'},
+    {id:59, name: 'monitoringLogin', question: 'Qual login do monitoramento do cliente?', typeOfResponse: 'text', isRequired: true, section: 'Monitoramento'},
+    {id:60, name: 'monitoringPassword', question: 'Qual senha do monitoramento do cliente?', typeOfResponse: 'text', isRequired: true, section: 'Monitoramento'},
+    {id:61, name: 'photoAppmonitoringCustomer', question: 'Foto do aplicativo de monitoramento do cliente', typeOfResponse: 'file', isRequired: true, section: 'Monitoramento'},
     /* Nota Fiscal */
-    {id:61, name: "sendNFsForPaymentNow", question: "Deseja enviar suas NF's para pagamento agora?", typeOfResponse: 'lista', isRequired: true, section: 'Nota Fiscal'},
-    {id:62, name: "uploadNFInPDFReferentSecondInstallment", question: "Faça upload da nota fiscal em PDF referente a segunda parcela do pagamento acordado", typeOfResponse: 'file', isRequired: true, section: 'Nota Fiscal'},
-    {id:63, name: "valueNFReferentSecontInstallment", question: "Informe o valor da nota fiscal referente a segunda parcela do pagamento acordado", typeOfResponse: 'number', isRequired: true, section: 'Nota Fiscal'},
-    {id:64, name: "uploadNFReferentExtraCosts", question: "Caso exista, faça upload da nota fiscal referente aos custos extras", typeOfResponse: 'file', isRequired: true, section: 'Nota Fiscal'},
-    {id:65, name: "valueNFReferentExtraCosts", question: "Informe o valor da nota fiscal referente aos custos extras.", typeOfResponse: 'number', isRequired: true, section: 'Nota Fiscal'},
-    {id:66, name: "CPNJ", question: "Informe seu CNPJ", typeOfResponse: 'text', isRequired: true, section: 'Nota Fiscal'},
+    {id:62, name: "sendNFsForPaymentNow", question: "Deseja enviar suas NF's para pagamento agora?", typeOfResponse: 'lista', isRequired: true, section: 'Nota Fiscal'},
+    {id:63, name: "uploadNFInPDFReferentSecondInstallment", question: "Faça upload da nota fiscal em PDF referente a segunda parcela do pagamento acordado", typeOfResponse: 'file', isRequired: true, section: 'Nota Fiscal'},
+    {id:64, name: "valueNFReferentSecontInstallment", question: "Informe o valor da nota fiscal referente a segunda parcela do pagamento acordado", typeOfResponse: 'number', isRequired: true, section: 'Nota Fiscal'},
+    {id:65, name: "uploadNFReferentExtraCosts", question: "Caso exista, faça upload da nota fiscal referente aos custos extras", typeOfResponse: 'file', isRequired: true, section: 'Nota Fiscal'},
+    {id:66, name: "valueNFReferentExtraCosts", question: "Informe o valor da nota fiscal referente aos custos extras.", typeOfResponse: 'number', isRequired: true, section: 'Nota Fiscal'},
+    {id:67, name: "CNPJ", question: "Informe seu CNPJ", typeOfResponse: 'text', isRequired: true, section: 'Nota Fiscal'},
 
     /* Pagamento */
-    {id:67, name: "wayOfReceivePayment", question: "Como deseja receber o pagamento?", typeOfResponse: 'lista', isRequired: true, section: 'Pagamento'},
-    {id:68, name: "typeKeyPIX", question: "Qual é o tipo da sua chave PIX?", typeOfResponse: 'lista', isRequired: true, section: 'Pagamento'},
-    {id:69, name: "PIX", question: "Qual é o seu PIX?", typeOfResponse: 'text', isRequired: true, section: 'Pagamento'},
-    {id:70, name: "bank", question: "Qual o seu banco?", typeOfResponse: 'text', isRequired: true, section: 'Pagamento'},
-    {id:71, name: "bankAgency", question: "Qual a sua Agência?", typeOfResponse: 'string', isRequired: true, section: 'Pagamento'},
-    {id:72, name: "currentAccount", question: "Qual a sua Conta Corrente?", typeOfResponse: 'text', isRequired: true, section: 'Pagamento'},
+    {id:68, name: "wayOfReceivePayment", question: "Como deseja receber o pagamento?", typeOfResponse: 'lista', isRequired: true, section: 'Pagamento'},
+    {id:69, name: "typeKeyPIX", question: "Qual é o tipo da sua chave PIX?", typeOfResponse: 'lista', isRequired: true, section: 'Pagamento'},
+    {id:70, name: "PIX", question: "Qual é o seu PIX?", typeOfResponse: 'text', isRequired: true, section: 'Pagamento'},
+    {id:71, name: "bank", question: "Qual o seu banco?", typeOfResponse: 'text', isRequired: true, section: 'Pagamento'},
+    {id:72, name: "bankAgency", question: "Qual a sua Agência?", typeOfResponse: 'string', isRequired: true, section: 'Pagamento'},
+    {id:73, name: "currentAccount", question: "Qual a sua Conta Corrente?", typeOfResponse: 'text', isRequired: true, section: 'Pagamento'},
     /* Finalização  */
-    {id:73, name: "pointsOfAttentionCustomerResidence", question: "Deseja relatar pontos de atenção da residência do cliente?", typeOfResponse: 'text', isRequired: true, section: 'Finalizacao'},
+    {id:74, name: "pointsOfAttentionCustomerResidence", question: "Deseja relatar pontos de atenção da residência do cliente?", typeOfResponse: 'text', isRequired: true, section: 'Finalizacao'},
   ]
 
   const invertersArray: inverterProps[] = [
@@ -735,14 +733,38 @@
                     name: 'MPPT 3',
                     numberOfInputs: 1
         }]
-    }]
+  }]
   const inverterNames = invertersArray.map((inverter) => inverter.name);
-  let valuesForm: any = reactive({})
+
+  let valuesForm: any = reactive({
+    qtdPanelsConnectedSingleInputOfTheSingle: [],
+    quantityInvertersInstalledIsEquals: 0,
+  });
  
+  const addInvertersInPanelsConnectedSingleInputOfTheSingle =(inverters:number) =>{
+    for (let i = 0; i < inverters; i++) {
+      valuesForm.qtdPanelsConnectedSingleInputOfTheSingle.push({
+        inverter:{
+          name: "",
+          distMppt: [[]]
+        }
+      })
+    }
+  }
 
-  const currentSection = refVue('Identificacao'); // Inicialmente, a seção atual é 'always'
-
-  const questionsPerPage = 21;
+  const updateDistMppt = (inverterSelected:string, index:number) =>{
+    
+    for(let inverterItem of invertersArray){
+      if(inverterSelected === inverterItem?.name){
+        valuesForm.qtdPanelsConnectedSingleInputOfTheSingle[index].inverter.distMppt = Array.from(
+          { length: inverterItem.MPPT.length },
+          () => [""] 
+        );
+        break;
+      }
+    }
+  }
+  const currentSection = refVue('Identificacao');
 
   const questions = refVue(dataArray);
 
@@ -784,37 +806,7 @@
     return filteredQuestions;
   });
 
-  const totalQuestions = computed(() => displayedQuestions.value.length);
-  const totalPages = computed(() => Math.ceil(totalQuestions.value / questionsPerPage));
-
-
-
-
   const progress = refVue(0)
-
-  const updateProgress = () => {
-    const currentSectionIndex = dataArray.findIndex((item) => item.section === currentSection.value);
-    const sectionQuestions = dataArray.slice(0, currentSectionIndex + 1).filter(
-      (question) =>
-        question.section === 'Identificacao' ||
-          question.section === 'Foto Geral' ||
-            question.section === 'Micro e String' ||
-              (question.section === 'String' && valuesForm.inverterTypeInstalled === 'Inversor String') ||
-                (question.section === 'Entradas MPPT' && valuesForm.inverterTypeInstalled === 'Inversor String' && valuesForm.quantityInvertersInstalled > 0) ||
-                  (question.section === 'Micro' && valuesForm.inverterTypeInstalled === 'Micro') ||
-                    (question.section === 'Conexoes') ||
-                      (question.section === 'Seguranca') ||
-                        (question.section === 'Monitoramento') ||
-                          (question.section === 'Pagamento') ||
-                            (question.section === 'Finalizacao')
-    );        
-    const totalSectionQuestions = sectionQuestions.length;
-    const answeredSectionQuestions = sectionQuestions.filter((question) => valuesForm[question.name] !== undefined);
-    const answeredSectionQuestionsCount = answeredSectionQuestions.length;
-
-    progress.value = (answeredSectionQuestionsCount / totalSectionQuestions) * 100;
-  };
-
 
   const scrollToTop = () =>{
     window.scrollTo({
@@ -823,11 +815,20 @@
     });
   }
 
-    // Função para navegar para a próxima seção
+  // Função para navegar para a próxima seção
   const goToNextSection = () => {
     const currentIndex = dataArray.findIndex((item) => item.section === currentSection.value);
     const nextIndex = dataArray.findIndex((item, index) => index > currentIndex && item.section !== currentSection.value);
     
+    if(valuesForm.quantityInvertersInstalledIsEquals !== valuesForm.quantityInvertersInstalled){
+      if(currentSection.value === 'String'){
+        
+        valuesForm.quantityInvertersInstalledIsEquals = valuesForm.quantityInvertersInstalled
+        addInvertersInPanelsConnectedSingleInputOfTheSingle(valuesForm.quantityInvertersInstalled)
+      }
+    }
+   
+
     if (nextIndex !== -1) {
       if (dataArray[nextIndex].section === 'String') {
         if (valuesForm.inverterTypeInstalled === 'Inversor String') {
@@ -840,6 +841,12 @@
           currentSection.value = 'Conexoes';
         } else{
           currentSection.value = 'Micro';
+        }
+      }else if(dataArray[nextIndex].section === 'Pagamento'){
+        if(valuesForm.sendNFsForPaymentNow === 'Sim'){
+          currentSection.value = 'Pagamento';
+        }else{
+          currentSection.value = 'Finalizacao';
         }
       }else {
         currentSection.value = dataArray[nextIndex].section;
@@ -867,6 +874,12 @@
         } else if (valuesForm.inverterTypeInstalled === 'Micro') {
           currentSection.value = 'Micro';
         }
+      }else if(dataArray[currentIndex - previousIndex - 1].section === 'Pagamento'){
+        if(valuesForm.sendNFsForPaymentNow === 'Sim'){
+          currentSection.value = 'Pagamento';
+        }else{
+          currentSection.value = 'Nota Fiscal';
+        }
       }else {
         currentSection.value = dataArray[currentIndex - previousIndex - 1].section;
       }
@@ -874,15 +887,108 @@
     progress.value-=10
   };
    
+
   const validationErrors = refVue<Record<string, string | undefined>>({});  
 
+  const createDynamicValidation = () => {
+    return yup
+      .number()
+      .typeError("Esta pergunta é obrigatória*")
+      .required("Esta pergunta é obrigatória*")
+      .test("dynamicValidation", "Erro de validação dinâmica", (value) => {
+        if (typeof value !== 'undefined') {
+          return true;
+        }
+        // Handle the case when value is undefined (considered invalid)
+        console.log('Valor undefined, verifique se há algum campo vazio. valor:'+value)
+        return false;
+      });
+  };
+
+  function isPhotoChainInverterInputValid(photoChainInverterInput:any) {
+    if (!Array.isArray(photoChainInverterInput)) {
+      return false;
+    }
+
+    for (const item of photoChainInverterInput) {
+      if (!item.inverter || !item.inverter.distMppt) {
+        return false;
+      }
+
+      for (const mppt of item.inverter.distMppt) {
+        if (!Array.isArray(mppt) || mppt.some((url) => typeof url !== "string")) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+
+  const distMpptSchema = yup
+  .array()
+  .of(yup.array().of(yup.lazy(createDynamicValidation)))
+  .required("Esta pergunta é obrigatória*");
+
+
   const validationSchema = yup.object({
+    qtdPanelsConnectedSingleInputOfTheSingle: yup
+      .array()
+      .of(
+        yup.object().shape({
+          inverter: yup.object().shape({
+            name: yup.string().required("Esta pergunta é obrigatória*"),
+            distMppt: distMpptSchema // Use the distMpptSchema here
+          })
+        })
+      )
+      .required("Esta pergunta é obrigatória*")
+    ,
+    photoVoltInverterInput: yup
+    .array()
+    .of(
+      yup.object().shape({
+        inverter: yup.object().shape({
+          distMppt: yup
+            .array()
+            .of(
+              yup.array()
+                .of(yup.string().url("Esta pergunta é obrigatória*"))
+                .min(1, "Esta pergunta é obrigatória*")
+            )
+            .min(1, "Esta pergunta é obrigatória*")
+        })
+      })
+    )
+    .required("Esta pergunta é obrigatória*"),
+
+    photoChainInverterInput: yup
+    .array()
+    .of(
+      yup.object().shape({
+        inverter: yup.object().shape({
+          distMppt: yup
+            .array()
+            .of(
+              yup.array()
+                .of(yup.string().url("Esta pergunta é obrigatória*"))
+                .min(1, "Esta pergunta é obrigatória*")
+            )
+            .min(1, "Esta pergunta é obrigatória*")
+        })
+      })
+    )
+    .required("Esta pergunta é obrigatória*"),
     enterpriseName: yup.string().required("Esta pergunta é obrigatória*"),
     responsibleTech: yup.string().required("Esta pergunta é obrigatória*"),
-    projectId: yup.number().required("Esta pergunta é obrigatória*"),
+    projectId: yup.number().typeError("Por favor, insira um número válido").required("Esta pergunta é obrigatória*").test('is-positive', 'O valor precisa ser maior que zero', value => value > 0),
     customerName: yup.string().required("Esta pergunta é obrigatória*"),
     installationStartDate: yup.date().required("Esta pergunta é obrigatória*"),
-    installationFinalDate: yup.date().required("Esta pergunta é obrigatória*"),
+    installationFinalDate: yup.date().required("Esta pergunta é obrigatória*") .test('startDateBeforeFinalDate', "A data de término da instalação deve ser maior ou igual à data de início da instalação.", function () {
+      const startDate = this.parent.installationStartDate;
+      return this.parent.installationFinalDate && startDate ? this.parent.installationFinalDate >= startDate : true;
+    }),
     photoFixingStructure: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
     photoGroundingModules: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
     photoInstalledPanels:  yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
@@ -894,24 +1000,22 @@
     photoCAPhaseAndNeutral: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
     photoCAPhaseAndPhase: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
     photoTagModules:  yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
-    photoIfProjectsWithBlocker: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
-    photoSNIfProjectsWithBlocker: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
+    photoIfProjectsWithBlocker: yup.array().max(10, "Você só pode escolher até 10 imagens/videos "),
+    photoSNIfProjectsWithBlocker: yup.array().max(10, "Você só pode escolher até 10 imagens/videos "),
     photoInputPattern:  yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
-    photoCircuitBreaker:  yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
+    photoBannerOfTheResidence:  yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
+    photoCircuitBreaker:  yup.array().max(10, "Você só pode escolher até 10 imagens/videos "),
     inverterTypeInstalled: yup.string().required("Esta pergunta é obrigatória*"),
-    quantityInvertersInstalled: yup.number().required("Esta pergunta é obrigatória*"),
+    quantityInvertersInstalled: yup.number().required("Esta pergunta é obrigatória*").test('is-positive', 'O valor precisa ser maior que zero', value => value > 0),
     photoSNInverterString: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
     photoSNAntennaInverterString: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
     photoDetailedConnectionEletric: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
     photoInstallationOfInvertersCCAndCA: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
     locationInverterInstalled: yup.string().required("Esta pergunta é obrigatória*"),
     heightBetweenInverterDisplayAndFloor:  yup.number().required("Esta pergunta é obrigatória*"),
-    inverterStringUsed:  yup.string().required("Esta pergunta é obrigatória*"),
-    qtdPanelsConnectedSingleInputOfTheSingle:  yup.number().required("Esta pergunta é obrigatória*"),
-    photoVoltInverterInput: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
-    photoChainInverterInput: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
+    inverterStringUsed: yup.array(),
     microInverterInstalled:  yup.string().required("Esta pergunta é obrigatória*"),
-    quantityMicroInvertersInstalled:  yup.number().required("Esta pergunta é obrigatória*"),
+    quantityMicroInvertersInstalled:  yup.number().required("Esta pergunta é obrigatória*").test('is-positive', 'O valor precisa ser maior que zero', value => value > 0),
     howManyInvertersNotCompletelyFull:  yup.number().required("Esta pergunta é obrigatória*"),
     sketchModulesOnTheRoof: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
     photoSNOfAllMicroInverters: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
@@ -924,34 +1028,121 @@
     whyNotStringBInvertersAndQBInstallInCoveredPlace:  yup.string(),
     installAccordingSinglelineDiagram:  yup.string().required("Esta pergunta é obrigatória*"),
     whyNotInstallAccordingSinglelineDiagram:  yup.string(),
-    singlelineProjectDiagram: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
+    singlelineProjectDiagram: yup.array().max(10, "Você só pode escolher até 10 imagens/videos "),
     respectedMinimunSoacingInverters:  yup.string().required("Esta pergunta é obrigatória*"),
     whyNotRespectedMinimunSoacingInverters:  yup.string(),
     allStringChecked:  yup.string().required("Esta pergunta é obrigatória*"),
     whyNotAllStringChecked:  yup.string(),
     heldInspectionLocationAfterInstall:  yup.string().required("Esta pergunta é obrigatória*"),
     allEPIsAndEPCsWereUsed:  yup.string().required("Esta pergunta é obrigatória*"),
-    photoUseEPIsAndEPCsNecessary: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
+    photoUseEPIsAndEPCsNecessary: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    (value) => {
+      if (valuesForm.allEPIsAndEPCsWereUsed === "Sim") {
+        return value !== undefined && value !== null && value.toString() !== "";
+      }
+      return true;
+    }),
     monitoringConnectedToHOLUAccount:  yup.string().required("Esta pergunta é obrigatória*"),
     whyNotMonitoringConnectedToHOLUAccount:  yup.string(),
-    monitoringLogin:  yup.string().required("Esta pergunta é obrigatória*"),
-    monitoringPassword:  yup.string().required("Esta pergunta é obrigatória*"),
-    photoAppmonitoringCustomer: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
+    monitoringLogin:  yup.string().test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    (value) => {
+      if (valuesForm.monitoringConnectedToHOLUAccount === "Sim") {
+        return value !== undefined && value !== null && value.toString() !== "";
+      }
+      return true;
+    }),
+    monitoringPassword:  yup.string().test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    (value) => {
+      if (valuesForm.monitoringConnectedToHOLUAccount === "Sim") {
+        return value !== undefined && value !== null && value.toString() !== "";
+      }
+      return true;
+    }),
+    photoAppmonitoringCustomer: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    value => valuesForm.monitoringConnectedToHOLUAccount !== "Sim" || (value && value.length > 0)
+    ),
     sendNFsForPaymentNow:  yup.string().required("Esta pergunta é obrigatória*"),
-    uploadNFInPDFReferentSecondInstallment: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
-    valueNFReferentSecontInstallment: yup.number().required("Esta pergunta é obrigatória*"),
-    uploadNFReferentExtraCosts: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").required("Esta pergunta é obrigatória*"),
-    valueNFReferentExtraCosts: yup.number().required("Esta pergunta é obrigatória*"),
-    CPNJ: yup.string().required("Esta pergunta é obrigatória*"),
+    uploadNFInPDFReferentSecondInstallment: yup.array().max(10, "Você só pode escolher até 10 imagens/videos ").test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    value => valuesForm.sendNFsForPaymentNow !== "Sim" || (value && value.length > 0)
+    ),
+    valueNFReferentSecontInstallment: yup.string().test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    (value) => {
+      if (valuesForm.sendNFsForPaymentNow === "Sim") {
+        return value !== undefined && value !== null && value.toString() !== "";
+      }
+      return true;
+    }),
+    uploadNFReferentExtraCosts: yup.array().max(10, "Você só pode escolher até 10 imagens/videos "),
+    valueNFReferentExtraCosts: yup.string(),
+    CNPJ: yup.string().test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    (value) => {
+      if (valuesForm.sendNFsForPaymentNow === "Sim") {
+        return value !== undefined && value !== null && value.toString() !== "";
+      }
+      return true;
+    }),
     wayOfReceivePayment:  yup.string().required("Esta pergunta é obrigatória*"),
-    typeKeyPIX:  yup.string(),
-    PIX:  yup.string(),
-    bank:  yup.string(),
-    bankAgency:  yup.string(),
-    currentAccount:  yup.string(),
-    pointsOfAttentionCustomerResidence:  yup.string(),
+    typeKeyPIX:  yup.string().test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    (value) => {
+      if (valuesForm.wayOfReceivePayment === "PIX") {
+        return value !== undefined && value !== null && value.toString() !== "";
+      }
+      return true;
+    }),
+    PIX:  yup.string().test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    (value) => {
+      if (valuesForm.wayOfReceivePayment === "PIX") {
+        return value !== undefined && value !== null && value.toString() !== "";
+      }
+      return true;
+    }),
+    bank:  yup.string().test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    (value) => {
+      if (valuesForm.wayOfReceivePayment === "TRANSFERÊNCIA") {
+        return value !== undefined && value !== null && value.toString() !== "";
+      }
+      return true;
+    }),
+    bankAgency:  yup.string().test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    (value) => {
+      if (valuesForm.wayOfReceivePayment === "TRANSFERÊNCIA") {
+        return value !== undefined && value !== null && value.toString() !== "";
+      }
+      return true;
+    }),
+    currentAccount:  yup.string().test(
+    "required",
+    "Esta pergunta é obrigatória*",
+    (value) => {
+      if (valuesForm.wayOfReceivePayment === "TRANSFERÊNCIA") {
+        return value !== undefined && value !== null && value.toString() !== "";
+      }
+      return true;
+    }),
+    pointsOfAttentionCustomerResidence:  yup.string().required("Esta pergunta é obrigatória*"),
   });   
-
   
   const hasValidationError = (fieldName: string) => {
     return validationErrors.value[fieldName] !== undefined;
@@ -968,9 +1159,24 @@
   const validateForm = () => {
     const currentSectionQuestions = displayedQuestions.value.map((question) => question.name);
 
+    const valuesFile = JSON.parse(localStorage.getItem('formsFiles') || '{}')
+    const { photoVoltInverterInput, photoChainInverterInput } = valuesFile;
+    const values = {...valuesForm, ...valuesFile, photoVoltInverterInput, photoChainInverterInput}
+
+    const isValidPhotoChainInverterInput = isPhotoChainInverterInputValid(
+      values.photoChainInverterInput
+    );
+
+    if (!isValidPhotoChainInverterInput) {
+      validationErrors.value.photoChainInverterInput =
+        "Por favor, escolha uma foto";
+    } else {
+      validationErrors.value.photoChainInverterInput = undefined; // Clear previous error message
+    }
+
     const validationPromises = currentSectionQuestions.map((fieldName) =>
       validationSchema
-        .validateAt(fieldName, valuesForm, { abortEarly: false })
+        .validateAt(fieldName, values, { abortEarly: false })
         .catch((error) => ({ fieldName, error }))
     );
 
@@ -996,12 +1202,12 @@
   }
 
   onMounted(() => {
-    // Recuperar os valores do localStorage
     const storedValues = localStorage.getItem('forms');
     if (storedValues) {
-      valuesForm = JSON.parse(storedValues);
+      Object.assign(valuesForm, JSON.parse(storedValues)); // Atribua os valores ao objeto valuesForm
     }
   });
+
 
   watch(currentSection, (newValue) => {
     
@@ -1009,9 +1215,20 @@
     updateSection(newValue)
   });
 
-  watch(valuesForm, () =>{
-    localStorage.setItem('forms', JSON.stringify(valuesForm))
-  })
+  
+  watch(valuesForm, () => {
+    localStorage.setItem('forms', JSON.stringify(valuesForm)); // Acesse os valores diretamente em valuesForm
+  });
+  
+  type ImageId = '7' | '8' | '9' | '10' | '11' | '12' | '13' | '14' | '15' | '16' | '17' | '18' | '19' | '20' | '22';
+
+  const getImagePath = (id?: ImageId) => {
+    
+    if (id && id in imageMap) {
+      return imageMap[id];
+    }
+  };
+
 </script>
 
 <template>
@@ -1021,7 +1238,7 @@
       <v-list-item
         v-for="data in displayedQuestions"
         :key="data.name"
-        style="width: 100%;"
+        style="width: 100%; min-height: 0 !important;"
       >
         <!-- 1 - PERGUNTAS, IDENTIFICACAO, FOTO GERAL, STRING E MICRO -->
         <div
@@ -1040,7 +1257,7 @@
             &&  data.name !== 'valueNFReferentSecontInstallment'
             &&  data.name !== 'uploadNFReferentExtraCosts'
             &&  data.name !== 'valueNFReferentExtraCosts'
-            &&  data.name !== 'CPNJ'
+            &&  data.name !== 'CNPJ'
             &&  data.name !== 'wayOfReceivePayment'
             &&  data.name !== 'typeKeyPIX'
             &&  data.name !== 'PIX'
@@ -1054,7 +1271,8 @@
             :name-input="data.name"  
             v-if="data.name !== 'quantityInvertersInstalled'"
           />
-          <div v-if="data.typeOfResponse === 'file'"  class="imagesDemo-container" :style="`background-image: url(/src/assets/fotos/${data.id}.png  ); background-color: lightgray; background-position: 50%; background-size: cover; background-repeat: no-repeat;`"/>
+          <div v-if="data.typeOfResponse === 'file'" class="imagesDemo-container" :style="`background-image: url(${getImagePath(data.id as ImageId)}); background-color: transparent; background-position: center center; background-size: contain; background-repeat: no-repeat;`"/>
+
           
           <inputVue
             
@@ -1092,10 +1310,10 @@
             :required-input="data.isRequired"
             :type-input="data.typeOfResponse"
             placeholder-input="Insira sua resposta"
-           
+            :name-customer="valuesForm.customerName"
+            :id-project="valuesForm.projectId"
             @change="(event) => {
               clearValidationError(data.name);
-            
             }"
           />
 
@@ -1201,7 +1419,7 @@
             :text="data.id+'. '+data.question" 
             :name-input="data.name"  
           />
-          <div v-if="data.typeOfResponse === 'file'"  class="imagesDemo-container" :style="`background-image: url(/src/assets/fotos/${data.id}.png  ); background-color: lightgray; background-position: 50%; background-size: cover; background-repeat: no-repeat;`"/>
+          <div v-if="data.typeOfResponse === 'file'" class="imagesDemo-container" :style="`background-image: url(${getImagePath(data.id as ImageId)}); background-color: transparent; background-position: center center; background-size: contain; background-repeat: no-repeat;`"/>
           <inputVue
             @change="clearValidationError(data.name)"
             v-if="
@@ -1215,6 +1433,8 @@
             v-model="valuesForm[data.name]"
           />
           <InputFile
+             :name-customer="valuesForm.customerName"
+            :id-project="valuesForm.projectId"
             v-else-if="
               data.typeOfResponse === 'file'
             "
@@ -1222,9 +1442,8 @@
             :required-input="data.isRequired"
             :type-input="data.typeOfResponse"
             placeholder-input="Insira sua resposta"
-            @change="(event) => {
+            @change="() => {
               clearValidationError(data.name);
-              valuesForm[data.name] = [event.target.files];
             }"
           />
 
@@ -1258,7 +1477,7 @@
             :text="data.id+'. '+data.question"  
             :name-input="data.name"  
           />
-          <div v-if="data.typeOfResponse === 'file'"  class="imagesDemo-container" :style="`background-image: url(/src/assets/fotos/${data.id}.png  ); background-color: lightgray; background-position: 50%; background-size: cover; background-repeat: no-repeat;`"/>
+          <div v-if="data.typeOfResponse === 'file'" class="imagesDemo-container" :style="`background-image: url(${getImagePath(data.id as ImageId)}); background-color: transparent; background-position: center center; background-size: contain; background-repeat: no-repeat;`"/>
           <inputVue
             @change="clearValidationError(data.name)"
             v-if="
@@ -1273,6 +1492,8 @@
           />
 
           <InputFile
+             :name-customer="valuesForm.customerName"
+            :id-project="valuesForm.projectId"
             v-else-if="
               data.typeOfResponse === 'file'
             "
@@ -1280,22 +1501,11 @@
             :required-input="data.isRequired"
             :type-input="data.typeOfResponse"
             placeholder-input="Insira sua resposta"
-            @change="(event) => {
+            @change="() => {
               clearValidationError(data.name);
-              valuesForm[data.name] = [event.target.files];
             }"
           />
-          <SelectVue 
-            v-if="
-              data.name === 'microInverterInstalled'"  
-              name-select="microInverterInstalled" 
-              :required-input="data.isRequired
-            "
-            :items="['APSYSTEMS DS3D 2000W','Enphase IQ7AM','Hoymiles - 1500 - 2MPPTS','Hoymiles 2000 - HMS-2000B-4T - 2MPPTS', 'Hoymiles 2000 - HMS-2000-4T - 4MPPTS']"
-            v-model="valuesForm[data.name]"
-            @change="clearValidationError(data.name)"
-          /> 
-
+         
           <span v-if="hasValidationError(data.name)" class="error-message">
             <v-icon left class="info-icon">mdi-information</v-icon>
             <span>{{ getValidationError(data.name) }}</span>
@@ -1311,20 +1521,24 @@
           "
         >
           <div v-for="(inverter,index) in Number(valuesForm.quantityInvertersInstalled)" :key="index">
-            <div class="container-molecule-form" :class="{ 'is-invalid': validationErrors[data.name] }" v-if="data.name === 'inverterStringUsed'">
+            
+            <div class="container-molecule-form" :class="{ 'is-invalid': validationErrors['qtdPanelsConnectedSingleInputOfTheSingle'] }" v-if="data.name === 'inverterStringUsed'">
               <labelVue :text="'Qual o '+ (inverter) +'º inversor string utilizado?'" :name-input="data.name"/>
               <SelectVue 
-                v-if="data.name === 'inverterStringUsed'"
                 :name-select="data.name"
                 :required-input="data.isRequired"
                 :items="inverterNames"
-                v-model="valuesForm[data.name + (inverter)]"
-                @change="clearValidationError(data.name)"
+                v-model="valuesForm.qtdPanelsConnectedSingleInputOfTheSingle[inverter-1].inverter.name"
+                @update:menu="(e) =>{
+                  clearValidationError('qtdPanelsConnectedSingleInputOfTheSingle')
+                  valuesForm[data.name + (index + 1)] = valuesForm.qtdPanelsConnectedSingleInputOfTheSingle[inverter-1].inverter.name
+                  updateDistMppt(valuesForm.qtdPanelsConnectedSingleInputOfTheSingle[inverter-1].inverter.name, inverter-1)
+                }"
               /> 
-              <span v-if="hasValidationError(data.name)" class="error-message">
-            <v-icon left class="info-icon">mdi-information</v-icon>
-            <span>{{ getValidationError(data.name) }}</span>
-          </span>
+              <span v-if="hasValidationError('qtdPanelsConnectedSingleInputOfTheSingle')" class="error-message">
+                <v-icon left class="info-icon">mdi-information</v-icon>
+                <span>{{ getValidationError('qtdPanelsConnectedSingleInputOfTheSingle') }}</span>
+              </span>
             </div>
 
             <template v-for="(inverterItem, itemIndex) in invertersArray" :key="itemIndex">
@@ -1334,72 +1548,87 @@
                 "
               >
                 <div v-for="(mppt, mpptIndex) in inverterItem.MPPT" :key="mpptIndex">
-                  <div v-for="(input, inputIndex) in mppt.numberOfInputs" :key="inputIndex" class="container-molecule-form" :class="{ 'is-invalid': validationErrors[data.name] }">
-                    <div v-if="valuesForm[data.name + (index + 1)] === inverterItem.name">
+                  <div v-for="(input, inputIndex) in mppt.numberOfInputs" :key="inputIndex" >
+                    <div v-if="valuesForm[data.name + (index + 1)] === inverterItem.name" class="container-molecule-form" :class="{ 'is-invalid': validationErrors['qtdPanelsConnectedSingleInput'+input+'OfTheSingle'+mppt.name+'Of'+inverter+'º'+inverterItem.name] }">
                       <labelVue :text="'Quantos painéis foram conectados a '+input+' entrada do '+mppt.name+' deste inversor?'" :name-input="'qtdPanelsConnectedSingleInput'+input+'OfTheSingle'+mppt.name+'Of'+inverter+'º'+inverterItem.name"/>
                       <inputVue
-                        @change="clearValidationError(data.name)" 
+                        @change="clearValidationError('qtdPanelsConnectedSingleInputOfTheSingle')" 
                         :name-input="'qtdPanelsConnectedSingleInput'+input+'OfTheSingle'+mppt.name+'Of'+inverter+'º'+inverterItem.name"
                         :required-input="data.isRequired"
                         type-input="number"
                         placeholder-input="Insira sua resposta"
-                        v-model="valuesForm['qtdPanelsConnectedSingleInput'+input+'OfTheSingle'+mppt.name+'Of'+inverter+'º'+inverterItem.name]"
+                        v-model="valuesForm.qtdPanelsConnectedSingleInputOfTheSingle[inverter-1].inverter.distMppt[mpptIndex][input-1]"
                       />
+                      <span v-if="hasValidationError('qtdPanelsConnectedSingleInput'+input+'OfTheSingle'+mppt.name+'Of'+inverter+'º'+inverterItem.name)" class="error-message">
+                        <v-icon left class="info-icon">mdi-information</v-icon>
+                        <span>{{ getValidationError('qtdPanelsConnectedSingleInput'+input+'OfTheSingle'+mppt.name+'Of'+inverter+'º'+inverterItem.name) }}</span>
+                      </span>
                     </div>
-                    <span v-if="hasValidationError(data.name)" class="error-message">
-                      <v-icon left class="info-icon">mdi-information</v-icon>
-                      <span>{{ getValidationError(data.name) }}</span>
-                    </span>
+
+                      <!-- foto tensão  -->
+                    <div :key="`input-${mpptIndex}`" class="container-molecule-form" :class="{ 'is-invalid': validationErrors['photoVoltInverterInput'] }">
+                        <div v-if="valuesForm[data.name + (index + 1)] === inverterItem.name">
+                          <labelVue text="32. Envie uma foto da tensão dessa entrada do inversor" :name-input="'photoVoltInverterInput'+'Of'+inverter+'º'+inverterItem.name"/>
+                          <div class="imagesDemo-container" :style="`background-image: url(${getImagePath('33' as ImageId)}); background-color: lightgray; background-position: 50%; background-size: cover; background-repeat: no-repeat;`"/>
+                          <InputFile
+                          
+                            :name-input="'photoVoltInverterInput'+inverter+'º'+mpptIndex+'input'+inputIndex"
+                            :required-input="data.isRequired"
+                            type-input="file"
+                            placeholder-input="Insira sua resposta"
+                            @change="(event) => {
+                              clearValidationError('photoVoltInverterInput');
+                            
+                            }"
+                            :inverter="Number(index)"
+                            :mppt="mpptIndex"
+                            :quantityInverter="valuesForm.quantityInvertersInstalled"  
+                            :lenghtMppt="inverterItem.MPPT.length"
+                            :input="inputIndex"
+                            :quantity-input="mppt.numberOfInputs"
+                            :id-project="valuesForm.projectId"
+                            max="1"
+                          />
+                          
+                        </div>
+                        <span v-if="hasValidationError('photoVoltInverterInput')" class="error-message">
+                          <v-icon left class="info-icon">mdi-information</v-icon>
+                          <span>{{ getValidationError('photoVoltInverterInput') }}</span>
+                        </span>
+                    </div>
+
+                   <!-- foto corrente -->
+                  
+                    <div  class="container-molecule-form" :class="{ 'is-invalid': validationErrors['photoChainInverterInput'] }">
+                      <div v-if="valuesForm[data.name + (index + 1)] === inverterItem.name">
+                        <labelVue text="33. Envie uma foto da corrente dessa entrada do inversor" :name-input="'photoChainInverterInput'+'Of'+inverter+'º'+inverterItem.name"/>
+                        <div class="imagesDemo-container" :style="`background-image: url(${getImagePath('34' as ImageId)});png); background-color: lightgray; background-position: 50%; background-size: cover; background-repeat: no-repeat;`"/>
+                        <InputFile
+                        
+                          :name-input="'photoChainInverterInput'+inverter+'º'+mpptIndex+'input'+inputIndex"
+                          :required-input="data.isRequired"
+                          type-input="file"
+                          placeholder-input="Insira sua resposta"
+                          @change="(event) => {
+                            clearValidationError('photoChainInverterInput');
+                          }"
+                          :inverter="Number(index)"
+                          :mppt="mpptIndex"
+                          :quantityInverter="valuesForm.quantityInvertersInstalled"  
+                          :lenghtMppt="inverterItem.MPPT.length"
+                          :input="inputIndex"
+                          :quantity-input="mppt.numberOfInputs"
+                          :id-project="valuesForm.projectId"
+                          max="1"
+                        />
+                      </div>
+                      <span v-if="hasValidationError('photoChainInverterInput')" class="error-message">
+                        <v-icon left class="info-icon">mdi-information</v-icon>
+                        <span>{{ getValidationError('photoChainInverterInput') }}</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
-                 <!-- foto tensão  -->
-                 <div  class="container-molecule-form" :class="{ 'is-invalid': validationErrors[data.name] }">
-                    <div v-if="valuesForm[data.name + (index + 1)] === inverterItem.name">
-                      
-                      <labelVue text="32. Envie uma foto da tensão dessa entrada do inversor" :name-input="'photoVoltInverterInput'+'Of'+inverter+'º'+inverterItem.name"/>
-                      <div class="imagesDemo-container" :style="`background-image: url(/src/assets/fotos/${32}.png  ); background-color: lightgray; background-position: 50%; background-size: cover; background-repeat: no-repeat;`"/>
-                      <InputFile
-                       
-                        :name-input="'photoVoltInverterInput'+'Of'+inverter+'º'+inverterItem.name"
-                        :required-input="data.isRequired"
-                        type-input="file"
-                        placeholder-input="Insira sua resposta"
-                        @change="(event) => {
-                          clearValidationError(data.name);
-                          valuesForm[data.name] = [event.target.files];
-                        }"
-                      />
-                      
-                    </div>
-                    <span v-if="hasValidationError(data.name)" class="error-message">
-                      <v-icon left class="info-icon">mdi-information</v-icon>
-                      <span>{{ getValidationError(data.name) }}</span>
-                    </span>
-                  </div>
-                  <!-- foto corrente -->
-                  
-                  <div  class="container-molecule-form" :class="{ 'is-invalid': validationErrors[data.name] }">
-                    <div v-if="valuesForm[data.name + (index + 1)] === inverterItem.name">
-                      
-                      <labelVue text="33. Envie uma foto da corrente dessa entrada do inversor" :name-input="'photoChainInverterInput'+'Of'+inverter+'º'+inverterItem.name"/>
-                      <div class="imagesDemo-container" :style="`background-image: url(/src/assets/fotos/${33}.png  ); background-color: lightgray; background-position: 50%; background-size: cover; background-repeat: no-repeat;`"/>
-                      <InputFile
-                       
-                        :name-input="'photoChainInverterInput'+'Of'+inverter+'º'+inverterItem.name"
-                        :required-input="data.isRequired"
-                        type-input="file"
-                        placeholder-input="Insira sua resposta"
-                        @change="(event) => {
-                          clearValidationError(data.name);
-                          valuesForm[data.name] = [event.target.files];
-                        }"
-                      />
-                    </div>
-                    <span v-if="hasValidationError(data.name)" class="error-message">
-            <v-icon left class="info-icon">mdi-information</v-icon>
-            <span>{{ getValidationError(data.name) }}</span>
-          </span>
-                  </div>
               </template>
             </template>
           </div>
@@ -1425,6 +1654,7 @@
             
             v-if="
              data.typeOfResponse !== 'file'
+             && data.name !== 'CNPJ'
             "
             :name-input="data.name"
             :required-input="data.isRequired"
@@ -1434,7 +1664,22 @@
             @change="clearValidationError(data.name)"
           />
 
+          <inputVue
+            
+            v-if="
+             data.typeOfResponse !== 'file'
+             && data.name === 'CNPJ'
+            "
+            :name-input="data.name"
+            :required-input="data.isRequired"
+            :type-input="data.typeOfResponse"
+            placeholder-input="00.000.000/0000-00"
+            v-model="valuesForm[data.name]"
+            @change="clearValidationError(data.name)"
+          />
           <InputFile
+             :name-customer="valuesForm.customerName"
+            :id-project="valuesForm.projectId"
             v-else-if="
               data.typeOfResponse === 'file'
             "
@@ -1444,7 +1689,6 @@
             placeholder-input="Insira sua resposta"
             @change="(event) => {
               clearValidationError(data.name);
-              valuesForm[data.name] = [event.target.files];
             }"
           />
 
@@ -1489,6 +1733,8 @@
           />
 
           <InputFile
+             :name-customer="valuesForm.customerName"
+            :id-project="valuesForm.projectId"
             v-else-if="
               data.typeOfResponse === 'file'
             "
@@ -1498,7 +1744,6 @@
             placeholder-input="Insira sua resposta"
             @change="(event) => {
               clearValidationError(data.name);
-              valuesForm[data.name] = [event.target.files];
             }"
           />
 
@@ -1528,7 +1773,7 @@
             && data.name !== 'valueNFReferentSecontInstallment'
             && data.name !== 'uploadNFReferentExtraCosts'
             && data.name !== 'valueNFReferentExtraCosts'
-            && data.name !== 'CPNJ'
+            && data.name !== 'CNPJ'
             && data.name !== 'wayOfReceivePayment'
             && data.name !== 'sendNFsForPaymentNow'
             && data.name !== 'bank'
@@ -1541,12 +1786,12 @@
             :text="data.id+'. '+data.question" 
             :name-input="data.name"  
           />
-          <div v-if="data.typeOfResponse === 'file'"  class="imagesDemo-container" :style="`background-image: url(/src/assets/fotos/${data.id}.png  ); background-color: lightgray; background-position: 50%; background-size: cover; background-repeat: no-repeat;`"/>
+          <div v-if="data.typeOfResponse === 'file'" class="imagesDemo-container" :style="`background-image: url(${getImagePath(data.id as ImageId)}); background-color: transparent; background-position: center center; background-size: contain; background-repeat: no-repeat;`"/>
           <inputVue
             @change="clearValidationError(data.name)"
             v-if="
              data.typeOfResponse !== 'file'
-             && data.name !== 'wayOfReceivePayment'
+             && data.name !== 'typeKeyPIX'
             "
             :name-input="data.name"
             :required-input="data.isRequired"
@@ -1557,6 +1802,8 @@
           />
 
           <InputFile
+             :name-customer="valuesForm.customerName"
+            :id-project="valuesForm.projectId"
             v-else-if="
               data.typeOfResponse === 'file'
             "
@@ -1572,11 +1819,11 @@
 
           <SelectVue 
             v-if="
-              data.name === 'wayOfReceivePayment'
+              data.name === 'typeKeyPIX'
             "  
             name-select="wayOfReceivePayment" 
             :required-input="data.isRequired"
-            :items="['PIX', 'TRANSFERÊNCIA']"
+            :items="['CNPJ', 'Telefone', 'E-mail']"
             v-model="valuesForm[data.name]"
             @change="clearValidationError(data.name)"
           /> 
@@ -1597,7 +1844,7 @@
             && data.name !== 'valueNFReferentSecontInstallment'
             && data.name !== 'uploadNFReferentExtraCosts'
             && data.name !== 'valueNFReferentExtraCosts'
-            && data.name !== 'CPNJ'
+            && data.name !== 'CNPJ'
             && data.name !== 'wayOfReceivePayment'
             && data.name !== 'sendNFsForPaymentNow'
             && data.name !== 'typeKeyPIX'
@@ -1630,9 +1877,10 @@
     <div class="container-buttons">
       <v-btn  @click="goToPreviousSection" :disabled="currentSection === 'Identificacao' ? true : false">Anterior</v-btn>
       <div class="container-progress-bar">
-        <v-progress-linear v-model="progress" :max="valuesForm.inverterTypeInstalled === 'Inversor String' ? '100' : '90'" color="#1f4997"></v-progress-linear>
+        <v-progress-linear v-model="progress" :max="valuesForm.inverterTypeInstalled === 'Inversor String' ? valuesForm.sendNFsForPaymentNow === 'Sim' ? '100' : '90' :  valuesForm.sendNFsForPaymentNow === 'Sim' ? '90' : '80'" color="#1f4997"></v-progress-linear>
       </div>
-      <v-btn v-if="currentSection !== 'Finalizacao'"  @click="goToNextSection">Próximo</v-btn>
+      <v-btn v-if="currentSection !== 'Finalizacao'"  @click="validateForm" >Próximo</v-btn>
+      <v-btn v-if="currentSection === 'Finalizacao'"  @click="emit('send-form')">Enviar</v-btn>
     </div>
   </div>  
  
@@ -1649,6 +1897,7 @@
 }
 
 .container-molecule-form {  
+  height: auto;
   display: flex;
   flex-direction: column;
   padding: 2rem;
@@ -1659,12 +1908,21 @@
   border: 1px solid var(--gray-400, #CCC);
 }
 
-.imagesDemo-container{
-  width: 100%;
-  height: 16.375rem;
- 
-
+@media screen and (max-width:480px) {
+  .container-molecule-form{
+    padding: 1rem;
+  }
 }
+
+.imagesDemo-container {
+  width: 100%;
+  height: 14rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-position: center;
+}
+
 .container-buttons{
   width: 88%;
   display: flex;
@@ -1679,14 +1937,11 @@
  }
 
  .container-progress-bar{
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    left: 0;
-    right: 0;
+    
+    width: 80%;
     display: flex;
     justify-content: flex-start;
-    z-index: 9999;
+    
   }
 
   .is-invalid {

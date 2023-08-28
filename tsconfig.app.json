@@ -1,6 +1,6 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "src/v-mask.d.ts","src/**/*", "src/**/*.vue", "src/**/*.xlsx"],
+  "include": ["env.d.ts", "src/v-mask.d.ts", "vite-plugin-copy.d.ts","src/**/*", "src/**/*.vue", "src/**/*.xlsx","src/**/*.ts"],
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
     "composite": true,

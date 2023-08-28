@@ -21,7 +21,7 @@
     :required-input="props.requiredInput"
     :items="props.items"
     v-model="value"
-    @change="setValue($event.target.value)"
+    
   >
   </v-select>
 

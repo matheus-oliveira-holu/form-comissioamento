@@ -2,119 +2,82 @@
 <!-- eslint-disable no-constant-condition -->
 <script setup lang="ts">
   import MoleculeForm from '../molecules/MoleculeForm.vue';
-  import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-  import { storage, app, auth } from '@/firebase';
-  import { getFirestore, collection, addDoc } from 'firebase/firestore';
-  import { signInAnonymously } from "firebase/auth";
   import {ref as refVue} from 'vue'
   import { useForm } from 'vee-validate';
-
-  const db = getFirestore(app);
+  import { db, auth } from '@/firebase';
+  import { addDoc, collection } from 'firebase/firestore';
+import { signInAnonymously } from 'firebase/auth';
  
-  
-
-  const { values, handleSubmit } = useForm();
-  /* const handleFileUpload = () => {
-  const file = fileInput.value?.files?.[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const data = new Uint8Array(e.target?.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const json: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-      if (Array.isArray(json)) {
-        for (let i = 0; i < json.length; i++) {
-          if (Array.isArray(json[i])) {
-            const formData: dataFormProps = {
-              question: json[i][0],
-              typeOfResponse:
-                json[i][1] === 'Texto'
-                  ? 'text'
-                  : json[i][1] === 'Data'
-                  ? 'date'
-                  : json[i][1] === 'Número inteiro'
-                  ? 'number'
-                  : json[i][1] === 'Número'
-                  ? 'number'
-                  : json[i][1] === 'Foto' || json[i][1] === 'Foto/Vídeo'
-                  ? 'file'
-                  : '',
-              params: json[i][2],
-              isRequired: json[i][3],
-              optionResponse: json[i][4],
-              logic: json[i][5],
-              photosExamples: json[i][6],
-              observation: json[i][7],
-            };
-            if (formData.question !== '') {
-              jsonData.push(formData);
-            }
-          }
-        }
-        if (jsonData.length > 0) {
-          console.log(jsonData[0]); // Acessando o primeiro elemento do array
-        } else {
-          console.log('O array jsonData está vazio.');
-        }
+  const { handleSubmit } = useForm();
+   
+  function flattenArray(arr: any[]): any[] {
+    const flattenedArray: any[] = [];
+    arr.forEach((item: any) => {
+      if (Array.isArray(item)) {
+        flattenedArray.push(...flattenArray(item));
       } else {
-        console.log('jsonData não é um array.');
+        flattenedArray.push(item);
       }
-    };
-    reader.readAsArrayBuffer(file);
+    });
+    return flattenedArray;
   }
-  }; */
+
+  function arrayToNestedString(arr: any[]): string {
+    if (!Array.isArray(arr)) {
+      return `"${String(arr)}"`;
+    }
+
+    const innerStrings: any[] = arr.map((innerArr) => `[${innerArr.map(String).join(',')}]`);
+    return `[${innerStrings.join(',')}]`;
+  }
+
 
   const onSubmit = handleSubmit(async () => {
-    console.log('entrou');
-    
+
     const storedValues = localStorage.getItem('forms');
     const valuesForm = storedValues ? JSON.parse(storedValues) : null;
     const storedValuesFiles = localStorage.getItem('formsFiles');
     const valuesFormFile = storedValuesFiles ? JSON.parse(storedValuesFiles) : null;
 
-    const values = {...valuesForm, ...valuesFormFile}
-    
-    
-    console.log(values);
-    
-    /* for (const key in updatedValues) {
-      const file = updatedValues[key];
+    const values = { ...valuesForm, ...valuesFormFile };
 
-      if (Array.isArray(file)) {
-        const fileURLs = await Promise.all(file.map((f) => {
-          const storageRef = ref(storage, `images/${f.name}`);
-          return uploadBytes(storageRef, f)
-            .then((snapshot) => getDownloadURL(snapshot.ref)).catch((error) => alert(error)) ;
-        }));
+  
+    for (const key in values) {
+      if (Array.isArray(values[key])) {
+        values[key] = flattenArray(values[key]);
+      }
+    }
 
-        updatedValues[key] = fileURLs;
-      } 
-    } */
+    for(let i = 0; i < values.quantityInvertersInstalled; i++){
+      values.photoChainInverterInput[i].inverter.distMppt = arrayToNestedString(values.photoChainInverterInput[0].inverter.distMppt)
+      values.photoVoltInverterInput[i].inverter.distMppt = arrayToNestedString(values.photoVoltInverterInput[0].inverter.distMppt)
+      values.qtdPanelsConnectedSingleInputOfTheSingle[i].inverter.distMppt = arrayToNestedString(values.qtdPanelsConnectedSingleInputOfTheSingle[i].inverter.distMppt)
+    }
 
-     signInAnonymously(auth).then(async() =>{
-      console.log('AUTENTICADO!!!!!!!!!!');
-      
-      const docRef = await addDoc(collection(db, 'forms'), values);
-      console.log('Documento escrito com ID:', docRef.id);
+    values.dataInclude = new Date().toLocaleString()
+
+    signInAnonymously(auth).then(async() =>{
+
+      await addDoc(collection(db, 'forms'), values);
+      alert('Formulário enviado com sucesso!');
+      localStorage.clear();
+      window.location.reload();
     })
     .catch((error) => {
-      const errorCode = error.code;
       const errorMessage = error.message;
-      console.log(errorCode, errorMessage);
     
+      alert('Erro ao salvar o formulário!, descrição do problema: '+errorMessage)
+      console.log(error);
     });
   });
+
+
+
   
   const currentSection = refVue('Identificacao')
 
   const updateSection = (section: any) =>{
-    
-    
     currentSection.value = section
-    console.log('currentSection: '+currentSection.value);
-    
   }
   
 </script>
@@ -128,21 +91,9 @@
   
     <div style="width: 100%;">
       <div>
-        <MoleculeForm @section-updated="updateSection"/>
+        <MoleculeForm @section-updated="updateSection" @send-form="onSubmit"/>
       </div>
     </div>
-   <div class="container-btn">
-    <v-btn 
-      class="btn-submit"
-      v-if="
-        currentSection === 'Finalizacao'
-      "
-      type="submit" 
-      
-      >
-      Enviar
-    </v-btn>
-   </div>
   </v-form>
 </template>
 

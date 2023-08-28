@@ -5,12 +5,13 @@ import { getAuth } from 'firebase/auth'
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAaNpu5hOo50cJlbDAkvEiMSEqYyUkPIU0",
-  authDomain: "form-comissionamento.firebaseapp.com",
-  projectId: "form-comissionamento",
-  storageBucket: "form-comissionamento.appspot.com",
-  messagingSenderId: "1024976603255",
-  appId: "1:1024976603255:web:44a2dd09a02d664a111e72"
+  apiKey: "AIzaSyAOq79GH7QN57T7Bd9nbJ_P8R1onhjpMA4",
+  authDomain: "holu-ops-dev.firebaseapp.com",
+  databaseURL: "https://holu-ops-dev.firebaseio.com",
+  projectId: "holu-ops-dev",
+  storageBucket: "holu-ops-dev.appspot.com",
+  messagingSenderId: "1010385749702",
+  appId: "1:1010385749702:web:3e004a0f24f162c32c39c7"
 };
 
 // Initialize Firebase
