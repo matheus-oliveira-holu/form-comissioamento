@@ -23,6 +23,7 @@
 
   const dataArray: dataFormProps[] = [
     /* Indentificação */
+    { name: 'emailInstaller', question: 'Informe seu e-mail', typeOfResponse: 'email', isRequired: true, section: 'Identificacao'},
     { id:1, name: 'enterpriseName', question: 'Qual o nome da sua empresa?', typeOfResponse: 'text', isRequired: true, section: 'Identificacao'},
     { id:2, name: 'responsibleTech', question: 'Qual o nome do responsável técnico?', typeOfResponse: 'text', isRequired: true, section: 'Identificacao'},
     { id:3, name: 'projectId', question: 'Código ID do projeto', typeOfResponse: 'number', isRequired: true, section: 'Identificacao'},
@@ -180,6 +181,7 @@
 
       await addDoc(collection(db, 'forms'), values);
       const emailContent = buildEmailContent(values, dataArray);
+      console.log(emailContent);
       alert('Formulário enviado com sucesso!');
       localStorage.clear();
       window.location.reload();

@@ -851,6 +851,7 @@
 
 
   const validationSchema = yup.object({
+    emailInstaller: yup.string().email("Por favor, insira um e-mail válido.").required("Esta pergunta é obrigatória*"),
     qtdPanelsConnectedSingleInputOfTheSingle: yup
       .array()
       .of(
@@ -1187,9 +1188,26 @@
           <labelVue 
             :text="data.id+'. '+data.question" 
             :name-input="data.name"  
-            v-if="data.name !== 'quantityInvertersInstalled'"
+            v-if="data.name !== 'quantityInvertersInstalled' && data.name !== 'emailInstaller'"
+          />
+
+          <labelVue 
+            :text="data.question" 
+            :name-input="data.name"  
+            v-if="data.name === 'emailInstaller'"
           />
           <div v-if="data.typeOfResponse === 'file'" class="imagesDemo-container" :style="`background-image: url(${getImagePath(data.id as ImageId)}); background-color: transparent; background-position: center center; background-size: contain; background-repeat: no-repeat;`"/>
+
+          <inputVue
+            
+            v-if="data.name === 'emailInstaller'"
+            :name-input="data.name"
+            :required-input="data.isRequired"
+            :type-input="data.typeOfResponse"
+            placeholder-input="Seu e-mail"
+            v-model="valuesForm[data.name]"
+            @change="clearValidationError(data.name)"
+          />
 
           
           <inputVue
@@ -1210,7 +1228,9 @@
             && data.name !== 'allEPIsAndEPCsWereUsed'
             && data.name !== 'monitoringConnectedToHOLUAccount'
             && data.name !== `sendNFsForPaymentNow`
+            && data.name !== 'emailInstaller'
             && data.typeOfResponse !== 'file'
+
             "
             :name-input="data.name"
             :required-input="data.isRequired"
