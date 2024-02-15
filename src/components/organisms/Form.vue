@@ -1,6 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <!-- eslint-disable no-constant-condition -->
 <script setup lang="ts">
+  import emailjs from 'emailjs-com';
   import MoleculeForm from '../molecules/MoleculeForm.vue';
   import {ref as refVue} from 'vue'
   import { useForm } from 'vee-validate';
@@ -23,7 +24,7 @@
 
   const dataArray: dataFormProps[] = [
     /* Indentificação */
-    { name: 'emailInstaller', question: 'Informe seu e-mail', typeOfResponse: 'email', isRequired: true, section: 'Identificacao'},
+    /* { name: 'emailInstaller', question: 'Informe seu e-mail', typeOfResponse: 'email', isRequired: true, section: 'Identificacao'}, */
     { id:1, name: 'enterpriseName', question: 'Qual o nome da sua empresa?', typeOfResponse: 'text', isRequired: true, section: 'Identificacao'},
     { id:2, name: 'responsibleTech', question: 'Qual o nome do responsável técnico?', typeOfResponse: 'text', isRequired: true, section: 'Identificacao'},
     { id:3, name: 'projectId', question: 'Código ID do projeto', typeOfResponse: 'number', isRequired: true, section: 'Identificacao'},
@@ -116,6 +117,20 @@
 
   const { handleSubmit } = useForm();
    
+  async function sendEmail(emailContent: string, email:string) {
+    emailjs.init('FU2ubEa1PWdNFwwkM'); // Substitua pelo SendGrid API Key
+    const response = await emailjs.send(
+      'service_mmfma6f', // Use 'sendgrid' como service ID para usar o SendGrid
+      'template_poc638q', // Template ID (criado no site do EmailJS)
+      {
+        to_email: email, // Endereço de e-mail do destinatário
+        message: emailContent,
+      }
+    );
+
+    console.log('E-mail enviado:', response);
+  }
+
   // Função para construir o conteúdo do e-mail
   function buildEmailContent(data: Record<string, any>, questions: Array<any>): string {
     let emailContent = 'Respostas do formulário:\n\n';
@@ -180,8 +195,9 @@
     signInAnonymously(auth).then(async() =>{
 
       await addDoc(collection(db, 'forms'), values);
-      const emailContent = buildEmailContent(values, dataArray);
-      console.log(emailContent);
+/*       const emailContent = buildEmailContent(values, dataArray);
+      console.log(values.emailInstaller);
+      sendEmail(emailContent,values.emailInstaller) */
       alert('Formulário enviado com sucesso!');
       localStorage.clear();
       window.location.reload();
@@ -194,15 +210,11 @@
     });
   });
 
-
-
-  
   const currentSection = refVue('Identificacao')
 
   const updateSection = (section: any) =>{
     currentSection.value = section
   }
-  
 </script>
 
 <template>
