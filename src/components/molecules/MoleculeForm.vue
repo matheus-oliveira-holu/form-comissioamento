@@ -7,8 +7,6 @@
   import {ref as refVue, computed, watch, reactive, onMounted} from 'vue'
   import InputFile from '../atoms/InputFile.vue';
   import imageMap from '@/image';
-  
-
 
   type inverterProps = {
     name: string,
@@ -647,7 +645,101 @@
                     name: 'MPPT 3',
                     numberOfInputs: 1
         }]
-  }]
+  },
+  {
+    name: 'Solplanet ASW 3000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      }
+      ,
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      }
+    ]
+  },
+  {
+    name: 'Solplanet ASW 4000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      }
+      ,
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      }
+    ]
+  },
+  {
+    name: 'Solplanet ASW 5000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      }
+      ,
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      }
+    ]
+  },
+  {
+    name: 'Solplanet ASW 7000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 3',
+        numberOfInputs: 1
+      }
+    ]
+  },
+  {
+    name: 'Solplanet ASW 8000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 3',
+        numberOfInputs: 1
+      }
+    ]
+  },
+  {
+    name: 'Solplanet ASW 10000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 3',
+        numberOfInputs: 1
+      }
+    ]
+  },
+]
   const inverterNames = invertersArray.map((inverter) => inverter.name);
 
   let valuesForm: any = reactive({
@@ -803,8 +895,7 @@
       }
       progress.value-=10
     }
-  };
-   
+  };   
 
   const validationErrors = refVue<Record<string, string | undefined>>({});  
 
@@ -843,15 +934,12 @@
     return true;
   }
 
-
   const distMpptSchema = yup
   .array()
   .of(yup.array().of(yup.lazy(createDynamicValidation)))
   .required("Esta pergunta é obrigatória*");
 
-
   const validationSchema = yup.object({
-    emailInstaller: yup.string().email("Por favor, insira um e-mail válido.").required("Esta pergunta é obrigatória*"),
     qtdPanelsConnectedSingleInputOfTheSingle: yup
       .array()
       .of(
@@ -1116,6 +1204,10 @@
       });
   };
 
+  const clearForm = () =>{
+    localStorage.clear();
+    window.location.reload();
+  }
   const updateSection = (newValue: string) => {
     emit('section-updated', newValue);
   }
@@ -1127,14 +1219,12 @@
     }
   });
 
-
   watch(currentSection, (newValue) => {
     
     scrollToTop();
     updateSection(newValue)
   });
 
-  
   watch(valuesForm, () => {
     localStorage.setItem('forms', JSON.stringify(valuesForm)); // Acesse os valores diretamente em valuesForm
   });
@@ -1820,6 +1910,9 @@
       <v-btn v-if="currentSection !== 'Finalizacao'"  @click="validateForm" >Próximo</v-btn>
       <v-btn v-if="currentSection === 'Finalizacao'"  @click="emit('send-form')">Enviar</v-btn>
     </div>
+    <div class="container-clear">
+      <v-btn class="clear" @click.prevent="clearForm">Limpar formulário</v-btn>
+    </div>
   </div>  
  
 </template>
@@ -1845,6 +1938,15 @@
   border-radius: 0.5rem;
   border: 1px solid var(--gray-400, #CCC);
 }
+
+.container-clear{
+  width: inherit;
+  display: flex;
+  margin-top: 1rem;
+  padding-left: 2.5rem;
+  justify-content: start;
+}
+
 
 @media screen and (max-width:480px) {
   .container-molecule-form{
