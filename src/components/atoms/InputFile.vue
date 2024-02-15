@@ -4,7 +4,7 @@
   import { storage } from '@/firebase';
   import { ref as refVue, reactive, onMounted, nextTick } from 'vue';
   import { useField } from 'vee-validate';
-
+  import { useFileNameStore } from "@/store/FileNameStore"
 
 
   type PropsInputFile = {
@@ -26,8 +26,9 @@
     photoVoltInverterInput: [],
     photoChainInverterInput:[]
   });
-  let uploadNames: any = reactive({});
-
+/*   let uploadNames: any = reactive({}); */
+  const nameStore = useFileNameStore()
+  const names = nameStore.names
   const selectedFiles = refVue<File[]>([]);
   const selectedFileNames = refVue<string[]>([]);
 
@@ -46,7 +47,7 @@
   const handleFileInputChange = async (event: Event) => {
     const inputElement = event.target as HTMLInputElement;
     const storedValues = JSON.parse(localStorage.getItem('formsFiles') || '{}');
-    const uploadNamesValues = JSON.parse(localStorage.getItem('uploadNames') || '{}');
+    /* const uploadNamesValues = JSON.parse(localStorage.getItem('uploadNames') || '{}'); */
 
     if (inputElement && inputElement.files) {
       const files = Array.from(inputElement.files);
@@ -61,8 +62,8 @@
           updatedValues[props.nameInput] = [];
         }
 
-        if (!uploadNames[props.nameInput]) {
-          uploadNames[props.nameInput] = [];
+        if (!names[props.nameInput]) {
+          names[props.nameInput] = [];
         }
         
         if( props.nameInput.startsWith("photoVoltInverterInput") && props.quantityInverter !== undefined && props.lenghtMppt !== undefined && props.quantityInput !== undefined &&props.mppt !== undefined && props.inverter !== undefined) {
@@ -131,13 +132,11 @@
             updatedValues[props.nameInput].push(fileURL);
           }
           
-          uploadNames[props.nameInput].push(file.name);
+          names[props.nameInput].push(file.name);
         }
 
         localStorage.setItem('formsFiles', JSON.stringify(updatedValues));
-        uploadNames = await {...uploadNamesValues, ...uploadNames}
-        localStorage.setItem('uploadNames', JSON.stringify(uploadNames));
-
+        nameStore.setName(names)
         setValue(updatedValues[props.nameInput]);
       }
     }
@@ -146,48 +145,38 @@
   const deleteImage = async () =>{
     if(props.nameInput.startsWith('photoChainInverterInput') && props.inverter !== undefined && props.mppt !== undefined && props.input !== undefined){
       
-      deleteImageFromStorage(uploadNames[props.nameInput]);
+      deleteImageFromStorage(names[props.nameInput]);
       const formsFiles = JSON.parse(localStorage.getItem("formsFiles") || "{}");
-      let names = JSON.parse(localStorage.getItem('uploadNames') || '{}');
       
       delete names[props.nameInput];
       delete formsFiles.photoChainInverterInput[props.inverter].inverter.distMppt[props.mppt][props.input];
       formsFiles.photoChainInverterInput[props.inverter].inverter.distMppt[props.mppt][props.input] = []
 
-      uploadNames = {...names}
-
-      localStorage.setItem("uploadNames", JSON.stringify(names));
+      nameStore.setName(names)
       localStorage.setItem("formsFiles", JSON.stringify(formsFiles));
     
       await nextTick();
     }else if(props.nameInput.startsWith('photoVoltInverterInput') && props.inverter !== undefined && props.mppt !== undefined && props.input !== undefined){
-      deleteImageFromStorage(uploadNames[props.nameInput]);
+      deleteImageFromStorage(names[props.nameInput]);
       const formsFiles = JSON.parse(localStorage.getItem("formsFiles") || "{}");
-      let names = JSON.parse(localStorage.getItem('uploadNames') || '{}');
       
       delete names[props.nameInput];
       delete formsFiles.photoVoltInverterInput[props.inverter].inverter.distMppt[props.mppt][props.input];
       formsFiles.photoVoltInverterInput[props.inverter].inverter.distMppt[props.mppt][props.input] = []
 
-      uploadNames = {...names}
-
-      localStorage.setItem("uploadNames", JSON.stringify(names));
+      nameStore.setName(names)
       localStorage.setItem("formsFiles", JSON.stringify(formsFiles));
     
       await nextTick();
-
     }else{
 
-      deleteImageFromStorage(uploadNames[props.nameInput])
+      deleteImageFromStorage(names[props.nameInput])
       const formsFiles = JSON.parse(localStorage.getItem('formsFiles') || '{}');
-      let names = JSON.parse(localStorage.getItem('uploadNames') || '{}');
       
-      delete names[props.nameInput];
+      delete names[props.nameInput]
       delete formsFiles[props.nameInput];
       
-      uploadNames = {...names}
-
-      localStorage.setItem('uploadNames', JSON.stringify(names));
+      nameStore.setName(names)
       localStorage.setItem('formsFiles', JSON.stringify(formsFiles));
     
       await nextTick();
@@ -213,7 +202,7 @@
   onMounted(() => {
     const storedValues =  JSON.parse(localStorage.getItem('uploadNames')  || '{}')
     if (storedValues) {
-      uploadNames[props.nameInput] = storedValues[props.nameInput]
+      names[props.nameInput] = storedValues[props.nameInput]
     }
   });
 
@@ -224,7 +213,7 @@
 <template>
   <div class="containerV">
     <div  class="names">
-      <div v-for="file in  uploadNames[props.nameInput]" :key="file">
+      <div v-for="file in  names[props.nameInput]" :key="file">
       <span>{{ file }}</span>
     </div>
     </div>
@@ -233,7 +222,7 @@
           <v-icon left>mdi-upload</v-icon>
           Selecionar
         </v-btn>
-        <v-btn v-if="uploadNames[props.nameInput]" class="v-btn-delete"  color="rgb(217,48,37)" @click="deleteImage">
+        <v-btn v-if="names[props.nameInput]" class="v-btn-delete"  color="rgb(217,48,37)" @click="deleteImage">
           <v-icon left color="#FFF">mdi-delete</v-icon>
           <span style="color: #FFF;">Limpar</span>
         </v-btn>
