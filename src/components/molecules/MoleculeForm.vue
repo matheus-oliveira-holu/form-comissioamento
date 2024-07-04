@@ -7,7 +7,15 @@
   import {ref as refVue, computed, watch, reactive, onMounted} from 'vue'
   import InputFile from '../atoms/InputFile.vue';
   import imageMap from '@/image';
-  
+
+  type inverterProps = {
+    name: string,
+    MPPT:{
+      name: string,
+      numberOfInputs: number
+    }[]
+  }
+
   type dataFormProps = {
     id?: any,
     name: string,
@@ -20,108 +28,12 @@
       'Seguranca' | 'Monitoramento' | 'Nota Fiscal' | 'Pagamento' | 'Finalizacao',
     photosExamples?: string,
   }
-
-  type inverterProps = {
-    name: string,
-    MPPT:{
-      name: string,
-      numberOfInputs: number
-    }[]
-  }
-
+  
   const emit = defineEmits(['section-updated', 'send-form'])
   
-  const dataArray: dataFormProps[] = [
-    /* Indentificação */
-    { id:1, name: 'enterpriseName', question: 'Qual o nome da sua empresa?', typeOfResponse: 'text', isRequired: true, section: 'Identificacao'},
-    { id:2, name: 'responsibleTech', question: 'Qual o nome do responsável técnico?', typeOfResponse: 'text', isRequired: true, section: 'Identificacao'},
-    { id:3, name: 'projectId', question: 'Código ID do projeto', typeOfResponse: 'number', isRequired: true, section: 'Identificacao'},
-    { id:4, name: 'customerName', question: 'Nome do cliente?', typeOfResponse: 'text', isRequired: true, section: 'Identificacao'},
-    { id:5, name: 'installationStartDate', question: 'Data de início da instalação', typeOfResponse: 'date', isRequired: true, section: 'Identificacao'},
-    { id:6, name: 'installationFinalDate', question: 'Data de término da instalação', typeOfResponse: 'date', isRequired: true, section: 'Identificacao'},
-    /* Foto Geral */
-    { id:7,  name: 'photoFixingStructure', question: 'Foto da estrutura de fixação antes da instalação dos painéis', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:8,  name: 'photoGroundingModules', question: 'Foto do aterramento dos módulos', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:9,  name: 'photoInstalledPanels', question: 'Foto geral de todos os painéis instalados', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:10,  name: 'photoConnectionsEletric', question: 'Foto detalhada das conexões elétricas da(s) caixa(s) de proteção CA', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:11, name: 'photoInverterConnectionPoint', question: 'Foto do ponto de conexão do inversor com a rede', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:12, name: 'photoFaceGroundingInverter', question: 'Foto do aterramento da carcaça do inversor', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:13, name: 'photoGroundingAttachmentPoint', question: 'Foto do ponto de fixação do aterramento do sistema', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:14, name: 'photoForVisualInspection', question: 'Fotos para inspeção visual do telhado após a obra (condições das telhas, calhas e limpeza do local)', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:15, name: 'photoCAPhaseAndNeutral', question: 'Fotos da tensão(s) CA medida(s) entre fase e neutro', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:16, name: 'photoCAPhaseAndPhase', question: 'Foto da(s) tensão(ões) CA medida(s) entre fase e fase', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:17, name: 'photoTagModules', question: 'Foto da etiqueta de um dos módulos', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:18, name: 'photoIfProjectsWithBlocker', question: 'Em caso de projetos com bloqueador (desligamento remoto), envie uma foto', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:19, name: 'photoSNIfProjectsWithBlocker', question: 'Em caso de projetos com bloqueador (desligamento remoto), envie uma foto do SN (ID)', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:20, name: 'photoInputPattern', question: 'Foto do padrão de entrada completo com placa(s) de sinalização', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:21, name: 'photoBannerOfTheResidence', question: 'Foto da fachada da residência com número.', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    { id:22, name: 'photoCircuitBreaker', question: 'Foto do disjuntor do padrão de entrada adequado e DPS instalado', typeOfResponse: 'file', isRequired: true, section: 'Foto Geral'},
-    /* ponto de descisão */
-    {id:23, name: 'inverterTypeInstalled', question: 'Qual tipo de inversor instalado?', typeOfResponse: 'lista', isRequired: true, section: 'Micro e String'},
-    /* string  */
-    {id:24, name: 'quantityInvertersInstalled', question: 'Quantos inversores foram instalados?', typeOfResponse: 'number', isRequired: true, section:'String'},
-    {id:25, name: 'photoSNInverterString', question: 'Foto SN do inversor', typeOfResponse: 'file', isRequired: true, section:'String'},
-    {id:26, name: 'photoSNAntennaInverterString', question: 'Foto SN da antena do inversor', typeOfResponse: 'file', isRequired: true, section:'String'},
-    {id:27, name: 'photoDetailedConnectionEletric', question: 'Foto detalhada das conexões elétricas da(s) stringbox CC', typeOfResponse: 'file', isRequired: true,  section:'String'},
-    {id:28, name: 'photoInstallationOfInvertersCCAndCA', question: 'Foto ampla do local de instalação do(s) inversor(es), stringbox CC e caixa(s) de proteção CA', typeOfResponse: 'file', isRequired: true,  section:'String'},
-    {id:29, name: 'locationInverterInstalled', question: 'Qual o local em que o inversor foi instalado?', typeOfResponse: 'text', isRequired: true,  section:'String'},
-    {id:30, name: 'heightBetweenInverterDisplayAndFloor', question: 'Qual a altura entre o visor do inversor e piso acabado?', typeOfResponse: 'number', isRequired: true, section:'String'},
-    /*  string - lógica MPPT */
-    {id:31, name: 'inverterStringUsed',question: 'Qual o "n" inversor string utilizado?', typeOfResponse: 'lista', isRequired: true,  section:'Entradas MPPT'},
-    {id:32, name: 'qtdPanelsConnectedSingleInputOfTheSingle', question: 'Quantos painéis foram conectados a entrada única do único MPPT deste inversor?',typeOfResponse: 'number', isRequired: true,  section:'Entradas MPPT',},
-    {id:33, name: 'photoVoltInverterInput', question: 'Envie uma foto da tensão dessa entrada do inversor', typeOfResponse: 'file', isRequired: true,  section:'Entradas MPPT'},
-    {id:34, name: 'photoChainInverterInput', question: 'Envie uma foto da corrente dessa entrada do inversor', typeOfResponse: 'file', isRequired: true,  section:'Entradas MPPT'  },
-
-    /* micro */
-    {id: 35, name: 'microInverterInstalled', question: 'Qual micro inversor foi instalado?', typeOfResponse: 'lista', isRequired: true, section: 'Micro'},
-    {id:36, name: 'quantityMicroInvertersInstalled', question: 'Quantos micros foram instalados?', typeOfResponse: 'number', isRequired: true, section:'Micro'},
-    {id:37, name: 'howManyInvertersNotCompletelyFull', question: 'Quantos desses micros NÃO estão completamente cheios?', typeOfResponse: 'number', isRequired: true, section:'Micro'},
-    {id:38, name: 'sketchModulesOnTheRoof', question: 'Envie o croqui dos módulos no telhado separados por micro inversor.', typeOfResponse: 'file', isRequired: true, section:'Micro'},
-    {id:39, name: 'photoSNOfAllMicroInverters', question: 'Foto SN de TODOS os micro inversores', typeOfResponse: 'file', isRequired: true, section:'Micro' },
-    {id:40, name: 'photoSNOfAntennaMicroInverters', question: 'Foto SN da antena dos micros inversores', typeOfResponse: 'file', isRequired: true,section:'Micro'},
-    
-    /* conexão */
-    {id:41, name: 'thePanelsGroundedTogether', question: 'Os painéis foram aterrados entre si e conectados ao aterramento conforme a Normativa?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:42, name: 'allRightCrimpagesConnectorsMC4', question: 'As crimpagens dos conectores MC4 foram realizadas com o alicate correto e suas conexões foram devidamente conferidas?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:43, name: 'doubleIsulationCablesWereUsed', question: 'Foram utilizados cabos de dupla isolação (solar), enviados no kit, para realizar as ligações das partes de corrente contínua (CC) do sistema?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:44, name: 'typeOfPipingUsedAtInstall', question: 'Qual tipo de tubulação utilizado na instalação elétrica do sistema?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:45, name: 'stringBInvertersAndQBInstallInCoveredPlace', question: 'As Stringbox, inversores e o quadro de distribuição foram instaladas em local coberto, livre de intempéries como incidência de sol e chuva?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:46, name: 'whyNotStringBInvertersAndQBInstallInCoveredPlace', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
-    {id:47, name: 'installAccordingSinglelineDiagram', question: 'A instalação foi executada conforme diagrama unifilar elaborado?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:48, name: 'whyNotInstallAccordingSinglelineDiagram', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
-    {id:49, name: 'singlelineProjectDiagram', question: 'Envie o diagrama unifilar do projeto.', typeOfResponse: 'file', isRequired: true, section: 'Conexoes'},
-    {id:50, name: 'respectedMinimunSoacingInverters', question: 'Foi respeitado o espaçamento livre mínimo dos inversores, conforme orientado no Manual de Instalação?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:51, name: 'whyNotRespectedMinimunSoacingInverters', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
-    {id:52, name: 'allStringChecked', question: 'No ensaio de polaridade, todas as strings foram verificadas?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    {id:53, name: 'whyNotAllStringChecked', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Conexoes'},
-    {id:54, name: 'heldInspectionLocationAfterInstall', question: 'Foi realizada inspeção no local após a instalação?', typeOfResponse: 'lista', isRequired: true, section: 'Conexoes'},
-    /* Segurança */
-    {id:55, name: 'allEPIsAndEPCsWereUsed', question: 'Foram utilizados todos os EPIs e EPCs necessários durante a instalação?', typeOfResponse: 'lista', isRequired: true, section: 'Seguranca'},
-    {id:56, name: 'photoUseEPIsAndEPCsNecessary', question: 'Envie uma foto ou vídeo demonstrando a utilização de EPIs e EPCs necessários durante a instalação', typeOfResponse: 'file', isRequired: true, section: 'Seguranca'},
-    /* Monitoramento */
-    {id:57, name: 'monitoringConnectedToHOLUAccount', question: 'O monitoramento foi realizado e está conectado a conta da Holu?', typeOfResponse: 'lista', isRequired: true, section: 'Monitoramento'},
-    {id:58, name: 'whyNotMonitoringConnectedToHOLUAccount', question: 'Por qual motivo não?', typeOfResponse: 'text', isRequired: true, section: 'Monitoramento'},
-    {id:59, name: 'monitoringLogin', question: 'Qual login do monitoramento do cliente?', typeOfResponse: 'text', isRequired: true, section: 'Monitoramento'},
-    {id:60, name: 'monitoringPassword', question: 'Qual senha do monitoramento do cliente?', typeOfResponse: 'text', isRequired: true, section: 'Monitoramento'},
-    {id:61, name: 'photoAppmonitoringCustomer', question: 'Foto do aplicativo de monitoramento do cliente', typeOfResponse: 'file', isRequired: true, section: 'Monitoramento'},
-    /* Nota Fiscal */
-    {id:62, name: "sendNFsForPaymentNow", question: "Deseja enviar suas NF's para pagamento agora?", typeOfResponse: 'lista', isRequired: true, section: 'Nota Fiscal'},
-    {id:63, name: "uploadNFInPDFReferentSecondInstallment", question: "Faça upload da nota fiscal em PDF referente a segunda parcela do pagamento acordado", typeOfResponse: 'file', isRequired: true, section: 'Nota Fiscal'},
-    {id:64, name: "valueNFReferentSecontInstallment", question: "Informe o valor da nota fiscal referente a segunda parcela do pagamento acordado", typeOfResponse: 'number', isRequired: true, section: 'Nota Fiscal'},
-    {id:65, name: "uploadNFReferentExtraCosts", question: "Caso exista, faça upload da nota fiscal referente aos custos extras", typeOfResponse: 'file', isRequired: true, section: 'Nota Fiscal'},
-    {id:66, name: "valueNFReferentExtraCosts", question: "Informe o valor da nota fiscal referente aos custos extras.", typeOfResponse: 'number', isRequired: true, section: 'Nota Fiscal'},
-    {id:67, name: "CNPJ", question: "Informe seu CNPJ", typeOfResponse: 'text', isRequired: true, section: 'Nota Fiscal'},
-
-    /* Pagamento */
-    {id:68, name: "wayOfReceivePayment", question: "Como deseja receber o pagamento?", typeOfResponse: 'lista', isRequired: true, section: 'Pagamento'},
-    {id:69, name: "typeKeyPIX", question: "Qual é o tipo da sua chave PIX?", typeOfResponse: 'lista', isRequired: true, section: 'Pagamento'},
-    {id:70, name: "PIX", question: "Qual é o seu PIX?", typeOfResponse: 'text', isRequired: true, section: 'Pagamento'},
-    {id:71, name: "bank", question: "Qual o seu banco?", typeOfResponse: 'text', isRequired: true, section: 'Pagamento'},
-    {id:72, name: "bankAgency", question: "Qual a sua Agência?", typeOfResponse: 'string', isRequired: true, section: 'Pagamento'},
-    {id:73, name: "currentAccount", question: "Qual a sua Conta Corrente?", typeOfResponse: 'text', isRequired: true, section: 'Pagamento'},
-    /* Finalização  */
-    {id:74, name: "pointsOfAttentionCustomerResidence", question: "Deseja relatar pontos de atenção da residência do cliente?", typeOfResponse: 'text', isRequired: true, section: 'Finalizacao'},
-  ]
+  const props = defineProps({
+    dataArray: Array<dataFormProps>, 
+  });
 
   const invertersArray: inverterProps[] = [
     {
@@ -733,7 +645,101 @@
                     name: 'MPPT 3',
                     numberOfInputs: 1
         }]
-  }]
+  },
+  {
+    name: 'Solplanet ASW 3000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      }
+      ,
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      }
+    ]
+  },
+  {
+    name: 'Solplanet ASW 4000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      }
+      ,
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      }
+    ]
+  },
+  {
+    name: 'Solplanet ASW 5000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      }
+      ,
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      }
+    ]
+  },
+  {
+    name: 'Solplanet ASW 7000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 3',
+        numberOfInputs: 1
+      }
+    ]
+  },
+  {
+    name: 'Solplanet ASW 8000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 3',
+        numberOfInputs: 1
+      }
+    ]
+  },
+  {
+    name: 'Solplanet ASW 10000 S S2 220',
+    MPPT: [
+      {
+        name: 'MPPT 1',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 2',
+        numberOfInputs: 1
+      },
+      {
+        name: 'MPPT 3',
+        numberOfInputs: 1
+      }
+    ]
+  },
+]
   const inverterNames = invertersArray.map((inverter) => inverter.name);
 
   let valuesForm: any = reactive({
@@ -766,10 +772,10 @@
   }
   const currentSection = refVue('Identificacao');
 
-  const questions = refVue(dataArray);
+  const questions = refVue(props.dataArray || []);
 
   const displayedQuestions = computed(() => {
-    const filteredQuestions = questions.value.filter((question) => {
+    const filteredQuestions = questions.value.filter((question:any) => {
       if (currentSection.value === 'Identificacao') {
         return question.section === 'Identificacao';
       } else if (currentSection.value === 'Foto Geral') {
@@ -817,76 +823,79 @@
 
   // Função para navegar para a próxima seção
   const goToNextSection = () => {
-    const currentIndex = dataArray.findIndex((item) => item.section === currentSection.value);
-    const nextIndex = dataArray.findIndex((item, index) => index > currentIndex && item.section !== currentSection.value);
-    
-    if(valuesForm.quantityInvertersInstalledIsEquals !== valuesForm.quantityInvertersInstalled){
-      if(currentSection.value === 'String'){
-        
-        valuesForm.quantityInvertersInstalledIsEquals = valuesForm.quantityInvertersInstalled
-        addInvertersInPanelsConnectedSingleInputOfTheSingle(valuesForm.quantityInvertersInstalled)
+    if (props.dataArray) {
+      const currentIndex = props.dataArray.findIndex((item) => item.section === currentSection.value);
+      const nextIndex = props.dataArray.findIndex((item, index) => index > currentIndex && item.section !== currentSection.value);
+
+
+      if(valuesForm.quantityInvertersInstalledIsEquals !== valuesForm.quantityInvertersInstalled){
+        if(currentSection.value === 'String'){
+          
+          valuesForm.quantityInvertersInstalledIsEquals = valuesForm.quantityInvertersInstalled
+          addInvertersInPanelsConnectedSingleInputOfTheSingle(valuesForm.quantityInvertersInstalled)
+        }
       }
-    }
    
 
-    if (nextIndex !== -1) {
-      if (dataArray[nextIndex].section === 'String') {
-        if (valuesForm.inverterTypeInstalled === 'Inversor String') {
-          currentSection.value = 'String';
-        } else if (valuesForm.inverterTypeInstalled === 'Micro') {
-          currentSection.value = 'Micro';
+      if (nextIndex !== -1) {
+        if (props.dataArray[nextIndex].section === 'String') {
+          if (valuesForm.inverterTypeInstalled === 'Inversor String') {
+            currentSection.value = 'String';
+          } else if (valuesForm.inverterTypeInstalled === 'Micro') {
+            currentSection.value = 'Micro';
+          }
+        }else if (props.dataArray[nextIndex].section === 'Micro') {
+          if (valuesForm.inverterTypeInstalled === 'Inversor String') {
+            currentSection.value = 'Conexoes';
+          } else{
+            currentSection.value = 'Micro';
+          }
+        }else if(props.dataArray[nextIndex].section === 'Pagamento'){
+          if(valuesForm.sendNFsForPaymentNow === 'Sim'){
+            currentSection.value = 'Pagamento';
+          }else{
+            currentSection.value = 'Finalizacao';
+          }
+        }else {
+          currentSection.value = props.dataArray[nextIndex].section;
         }
-      }else if (dataArray[nextIndex].section === 'Micro') {
-        if (valuesForm.inverterTypeInstalled === 'Inversor String') {
-          currentSection.value = 'Conexoes';
-        } else{
-          currentSection.value = 'Micro';
-        }
-      }else if(dataArray[nextIndex].section === 'Pagamento'){
-        if(valuesForm.sendNFsForPaymentNow === 'Sim'){
-          currentSection.value = 'Pagamento';
-        }else{
-          currentSection.value = 'Finalizacao';
-        }
-      }else {
-        currentSection.value = dataArray[nextIndex].section;
       }
+
+      progress.value+=10
     }
-
-    progress.value+=10
-
   };
 
   // Função para navegar para a seção anterior
   const goToPreviousSection = () => {
-    const currentIndex = dataArray.findIndex((item) => item.section === currentSection.value);
-    const previousIndex = dataArray.slice(0, currentIndex).reverse().findIndex((item) => item.section !== currentSection.value);
-    if (previousIndex !== -1) {
-      if (dataArray[currentIndex - previousIndex - 1].section === 'Entradas MPPT') {
-        if (valuesForm.inverterTypeInstalled === 'Inversor String') {
-          currentSection.value = 'Entradas MPPT';
-        } else if (valuesForm.inverterTypeInstalled === 'Micro') {
-          currentSection.value = 'Micro e String';
+    if(props.dataArray){
+      const currentIndex = props.dataArray.findIndex((item) => item.section === currentSection.value);
+      const previousIndex = props.dataArray.slice(0, currentIndex).reverse().findIndex((item) => item.section !== currentSection.value);
+      if (previousIndex !== -1) {
+        if (props.dataArray[currentIndex - previousIndex - 1].section === 'Entradas MPPT') {
+          if (valuesForm.inverterTypeInstalled === 'Inversor String') {
+            currentSection.value = 'Entradas MPPT';
+          } else if (valuesForm.inverterTypeInstalled === 'Micro') {
+            currentSection.value = 'Micro e String';
+          }
+        }else if (props.dataArray[currentIndex - previousIndex - 1].section === 'Micro') {
+          if (valuesForm.inverterTypeInstalled === 'Inversor String') {
+            currentSection.value = 'Entradas MPPT';
+          } else if (valuesForm.inverterTypeInstalled === 'Micro') {
+            currentSection.value = 'Micro';
+          }
+        }else if(props.dataArray[currentIndex - previousIndex - 1].section === 'Pagamento'){
+          if(valuesForm.sendNFsForPaymentNow === 'Sim'){
+            currentSection.value = 'Pagamento';
+          }else{
+            currentSection.value = 'Nota Fiscal';
+          }
+        }else {
+          currentSection.value = props.dataArray[currentIndex - previousIndex - 1].section;
         }
-      }else if (dataArray[currentIndex - previousIndex - 1].section === 'Micro') {
-        if (valuesForm.inverterTypeInstalled === 'Inversor String') {
-          currentSection.value = 'Entradas MPPT';
-        } else if (valuesForm.inverterTypeInstalled === 'Micro') {
-          currentSection.value = 'Micro';
-        }
-      }else if(dataArray[currentIndex - previousIndex - 1].section === 'Pagamento'){
-        if(valuesForm.sendNFsForPaymentNow === 'Sim'){
-          currentSection.value = 'Pagamento';
-        }else{
-          currentSection.value = 'Nota Fiscal';
-        }
-      }else {
-        currentSection.value = dataArray[currentIndex - previousIndex - 1].section;
       }
+      progress.value-=10
     }
-    progress.value-=10
-  };
-   
+  };   
 
   const validationErrors = refVue<Record<string, string | undefined>>({});  
 
@@ -925,12 +934,10 @@
     return true;
   }
 
-
   const distMpptSchema = yup
   .array()
   .of(yup.array().of(yup.lazy(createDynamicValidation)))
   .required("Esta pergunta é obrigatória*");
-
 
   const validationSchema = yup.object({
     qtdPanelsConnectedSingleInputOfTheSingle: yup
@@ -1157,7 +1164,7 @@
   };
 
   const validateForm = () => {
-    const currentSectionQuestions = displayedQuestions.value.map((question) => question.name);
+    const currentSectionQuestions = displayedQuestions.value.map((question: any) => question.name);
 
     const valuesFile = JSON.parse(localStorage.getItem('formsFiles') || '{}')
     const { photoVoltInverterInput, photoChainInverterInput } = valuesFile;
@@ -1174,7 +1181,7 @@
       validationErrors.value.photoChainInverterInput = undefined; // Clear previous error message
     }
 
-    const validationPromises = currentSectionQuestions.map((fieldName) =>
+    const validationPromises = currentSectionQuestions.map((fieldName:any) =>
       validationSchema
         .validateAt(fieldName, values, { abortEarly: false })
         .catch((error) => ({ fieldName, error }))
@@ -1182,7 +1189,7 @@
 
     Promise.all(validationPromises)
       .then((results) => {
-        const errors = results.reduce((acc, result) => {
+        const errors = results.reduce((acc:any, result:any) => {
           if (result && result.error) {
             acc[result.fieldName] = result.error.message;
           }
@@ -1197,6 +1204,10 @@
       });
   };
 
+  const clearForm = () =>{
+    localStorage.clear();
+    window.location.reload();
+  }
   const updateSection = (newValue: string) => {
     emit('section-updated', newValue);
   }
@@ -1208,14 +1219,12 @@
     }
   });
 
-
   watch(currentSection, (newValue) => {
     
     scrollToTop();
     updateSection(newValue)
   });
 
-  
   watch(valuesForm, () => {
     localStorage.setItem('forms', JSON.stringify(valuesForm)); // Acesse os valores diretamente em valuesForm
   });
@@ -1269,9 +1278,26 @@
           <labelVue 
             :text="data.id+'. '+data.question" 
             :name-input="data.name"  
-            v-if="data.name !== 'quantityInvertersInstalled'"
+            v-if="data.name !== 'quantityInvertersInstalled' && data.name !== 'emailInstaller'"
+          />
+
+          <labelVue 
+            :text="data.question" 
+            :name-input="data.name"  
+            v-if="data.name === 'emailInstaller'"
           />
           <div v-if="data.typeOfResponse === 'file'" class="imagesDemo-container" :style="`background-image: url(${getImagePath(data.id as ImageId)}); background-color: transparent; background-position: center center; background-size: contain; background-repeat: no-repeat;`"/>
+
+          <inputVue
+            
+            v-if="data.name === 'emailInstaller'"
+            :name-input="data.name"
+            :required-input="data.isRequired"
+            :type-input="data.typeOfResponse"
+            placeholder-input="Seu e-mail"
+            v-model="valuesForm[data.name]"
+            @change="clearValidationError(data.name)"
+          />
 
           
           <inputVue
@@ -1292,7 +1318,9 @@
             && data.name !== 'allEPIsAndEPCsWereUsed'
             && data.name !== 'monitoringConnectedToHOLUAccount'
             && data.name !== `sendNFsForPaymentNow`
+            && data.name !== 'emailInstaller'
             && data.typeOfResponse !== 'file'
+
             "
             :name-input="data.name"
             :required-input="data.isRequired"
@@ -1882,6 +1910,9 @@
       <v-btn v-if="currentSection !== 'Finalizacao'"  @click="validateForm" >Próximo</v-btn>
       <v-btn v-if="currentSection === 'Finalizacao'"  @click="emit('send-form')">Enviar</v-btn>
     </div>
+    <div class="container-clear">
+      <v-btn class="clear" @click.prevent="clearForm">Limpar formulário</v-btn>
+    </div>
   </div>  
  
 </template>
@@ -1907,6 +1938,15 @@
   border-radius: 0.5rem;
   border: 1px solid var(--gray-400, #CCC);
 }
+
+.container-clear{
+  width: inherit;
+  display: flex;
+  margin-top: 1rem;
+  padding-left: 2.5rem;
+  justify-content: start;
+}
+
 
 @media screen and (max-width:480px) {
   .container-molecule-form{
